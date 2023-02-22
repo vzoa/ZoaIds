@@ -1,0 +1,161 @@
+﻿@page "/charts"
+@using System.Text.Json
+@using ZoaIds.Shared.ExternalDataModels
+@inject HttpClient Http
+@inject ILogger<Charts> Logger
+
+<style>
+    .mud-table-cell-custom-group {
+        font-weight: 500;
+    }
+</style>
+
+<h3>Charts</h3>
+<MudTextField @bind-Value="ChartCommandTextField" Label="Chart Search Command" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.KeyboardArrowRight" />
+
+@if (DisplayedCharts is not null && DisplayedCharts.Count > 1)
+{
+	<MudTable Hover="true" Breakpoint="Breakpoint.Sm" Dense="true" Class="mt-2" FixedHeader="true"
+		Items="@DisplayedCharts"
+		GroupBy="@_groupDefinition"
+		GroupHeaderStyle="background-color:var(--mud-palette-background-grey)">
+		<ColGroup>
+			<col style="width: 60px;" />
+			<col />
+			<col />
+		</ColGroup>
+		<HeaderContent>
+			<MudTh>Name</MudTh>
+			<MudTh></MudTh>
+		</HeaderContent>
+		 <GroupHeaderTemplate>
+			<MudTh Class="mud-table-cell-custom-group" colspan="5">@context.Key</MudTh>
+		</GroupHeaderTemplate>
+		<RowTemplate>
+			<MudTd DataLabel="Name">@context.ChartName</MudTd>
+			<MudTd DataLabel="View">
+				<MudIconButton Icon="@Icons.Material.Filled.Pageview" aria-label="view" 
+					Variant="Variant.Filled" DisableElevation="true"
+					OnClick="@(() => PdfViewerChart = context)" 
+					Class="ma-0 pa-0" />
+			</MudTd>
+		</RowTemplate>
+	</MudTable>
+}
+
+@if (PdfViewerChart is not null)
+{
+	<MudElement HtmlTag="object"
+		Class="mt-2"
+		Style="width:100%;height:800px"
+		data="@PdfViewerChart.PdfPath"
+		type="application/pdf" />
+}
+
+
+@code {
+	private string? _chartCommandTextField;
+	private string? ChartCommandTextField
+	{
+		get => _chartCommandTextField;
+		set
+		{
+			_chartCommandTextField = value;
+
+			// Return early if empty
+			if (string.IsNullOrWhiteSpace(value)) return;
+
+			// Fetch the chart URL based on User input. May or may not
+			// include a chart search term
+			var splits = value?.Split(' ', 2);
+			var airportID = splits![0];
+			var chartName = splits.Length == 2 ? splits[1] : null;
+			UpdateDisplayedCharts(airportID, chartName);
+		}
+	}
+
+	private List<AviationApiChart>? _displayedCharts = null;
+	private List<AviationApiChart>? DisplayedCharts 
+	{
+		get => _displayedCharts;
+		set
+		{
+			_displayedCharts = value;
+			StateHasChanged();
+		}
+	}
+
+	private AviationApiChart? _pdfViewerChart = null;
+	private AviationApiChart? PdfViewerChart
+	{
+		get => _pdfViewerChart;
+		set
+		{
+			_pdfViewerChart = value;
+			StateHasChanged();
+		}
+	}
+
+	private TableGroupDefinition<AviationApiChart> _groupDefinition = CreateNewGroupDefinition();
+
+	private async Task UpdateDisplayedCharts(string airportId, string? chartSearchString)
+	{
+		// Fetch list of charts for given airport from API
+		var charts = await Http.GetFromJsonAsync<IDictionary<string, List<AviationApiChart>>>($"api/v1/charts/{airportId}");
+
+		if (charts is not null && charts.TryGetValue(airportId.ToUpper(), out var chartsList))
+		{
+			// If search string is null/whitespace we will include all charts for airport. Otherwise
+			// we check if the chartname includes the search string
+			var selectedCharts = chartsList
+				.Where(c => string.IsNullOrWhiteSpace(chartSearchString) || c.ChartName.Contains(chartSearchString, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+
+			// Update displayed chart and list depending on how many elements returned
+			if (selectedCharts.Count > 1)
+			{
+				_pdfViewerChart = null; // Use field to not call StateHasChanged, since we will call in next line
+				_groupDefinition = CreateNewGroupDefinition(selectedCharts.Count);
+				DisplayedCharts = selectedCharts;
+			}
+			else if (selectedCharts.Count == 1)
+			{
+				_displayedCharts = null; // Use field to not call StateHasChanged, since we will call in next line
+				PdfViewerChart = selectedCharts.First();
+			}
+
+			return;
+		}
+
+		// We get here if we didn't find an airport with the name
+		DisplayedCharts = null;
+	}
+		
+	private static string TranslateChartCodeToGroupName(string chartCode)
+	{
+		return (chartCode) switch
+		{
+			"APD" => "Airport Diagrams",
+			"MIN" => "Minimums",
+			"HOT" => "Hot Spots",
+			"DP" => "SIDs",
+			"STAR" => "STARs",
+			"IAP" => "Approaches",
+			_ => "Unknown"
+		};
+	}
+
+	// Creates a new Group Definition where IsInitiallyExpanded is dependent on
+	// the number of results (expand if < 10 results)
+	private static TableGroupDefinition<AviationApiChart> CreateNewGroupDefinition(int numResults = 0)
+	{
+		return new TableGroupDefinition<AviationApiChart>()
+		{
+			GroupName = "Chart Type",
+			Indentation = false,
+			Expandable = true,
+			IsInitiallyExpanded = numResults < 10,
+			Selector = (e) => TranslateChartCodeToGroupName(e.ChartCode)
+		};
+	}
+}

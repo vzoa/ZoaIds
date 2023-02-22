@@ -1,0 +1,36 @@
+﻿@page "/reference"
+@using System.Text.Json;
+@using ZoaIds.Shared.Models;
+@inject HttpClient Http
+@inject ILogger<Reference> Logger
+
+<h3>Reference</h3>
+
+<MudSelect @bind-Value="SelectedDoc" Placeholder="Select a document" Dense="true">
+	@if (FetchedDocs is not null)
+	{
+		foreach (var doc in FetchedDocs)
+		{
+			<MudSelectItem Value="doc">@doc.Name</MudSelectItem>
+		}
+	}
+</MudSelect>
+
+@if (SelectedDoc is not null)
+{
+	<MudElement HtmlTag="object"
+		Class="mt-2"
+		Style="width:100%;height:800px"
+		data="@SelectedDoc.LocalRelativePdfUrl"
+		type="application/pdf" />
+}
+
+@code {
+	private List<ArtccDocument>? FetchedDocs { get; set; }
+	private ArtccDocument? SelectedDoc { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		FetchedDocs = await Http.GetFromJsonAsync<List<ArtccDocument>>("api/v1/zoadocuments");
+	}
+}
