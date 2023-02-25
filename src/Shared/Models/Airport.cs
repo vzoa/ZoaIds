@@ -44,33 +44,3 @@ public class RunwayEnd
 	public string RunwayName { get; set; }
     public string AirportFaaId { get; set; }
 }
-
-public class Coordinate
-{
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
-
-    private static readonly double _earthRadiusKm = 6371;
-
-    public Coordinate() { }
-
-    public Coordinate(double lat, double lng)
-    {
-        Latitude = lat;
-        Longitude = lng;
-    }
-
-    //public static double SimpleDistanceBetween(Coordinate c1, Coordinate c2, DistanceUnit returnUnit = DistanceUnit.Kilometer)
-    //{
-    //    return 
-    //}
-
-    public enum DistanceUnit
-    {
-        Kilometer,
-        Meter,
-        StatuteMile,
-        Feet
-    }
-}
-

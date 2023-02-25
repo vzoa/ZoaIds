@@ -34,6 +34,11 @@ public class AirportsController : ControllerBase
 			_      => new List<Airport>()
 		};
 
-		return returnAirports.Count > 0 ? Ok(returnAirports) : NotFound();
+		return returnAirports.Count switch
+		{
+			1  => Ok(returnAirports.First()),
+			>1 => Ok(returnAirports),
+			_  => NotFound()
+		};
 	}
 }

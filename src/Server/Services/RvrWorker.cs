@@ -90,8 +90,8 @@ namespace ZoaIds.Server.Services
 					MidpointTrend = ParseTrend(tds[1].TextContent),
 					Rollout = ParseDistance(tds[2].TextContent),
 					RolloutTrend = ParseTrend(tds[2].TextContent),
-					EdgeLightSetting = string.IsNullOrEmpty(tds[3].TextContent.Trim()) ? null : int.Parse(tds[3].TextContent.Trim()),
-					CenterlineLightSetting = string.IsNullOrEmpty(tds[4].TextContent.Trim()) ? null : int.Parse(tds[4].TextContent.Trim())
+					EdgeLightSetting = ParseLightSetting(tds[3].TextContent),
+					CenterlineLightSetting = ParseLightSetting(tds[4].TextContent)
 				};
 				returnList.Add(newObs);
 			}
@@ -119,6 +119,19 @@ namespace ZoaIds.Server.Services
 				string s when s.Contains('▼')		  => RvrTrend.Decreasing,
 				_									  => RvrTrend.Steady
 			};
+		}
+
+		private static int? ParseLightSetting(string text)
+		{
+			text = text.Trim();
+			if (string.IsNullOrEmpty(text))
+			{
+				return null;
+			}
+			else
+			{
+				return int.TryParse(text, out var lightSetting) ? lightSetting : null;
+			}
 		}
 
 		[GeneratedRegex("[0-9]+")]

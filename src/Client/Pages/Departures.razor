@@ -1,0 +1,164 @@
+﻿@page "/departures"
+@using System.Text.Json
+@using ZoaIds.Shared.Models
+@using ZoaIds.Shared.ExternalDataModels
+@inject HttpClient Http
+@inject ILogger<Charts> Logger
+
+
+<style>
+	.mud-table-cell-custom-group {
+		font-weight: 500;
+	}
+</style>
+
+<MudTextField @bind-Value="AirportIcaoId" Label="Airport ICAO Id" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.KeyboardArrowRight" />
+
+@if (OnGroundDepartures is not null)
+{
+	<MudPaper Class="pa-5 ma-2">
+		<h3>Filed Departures on Ground</h3>
+		<MudTable Hover="true" Breakpoint="Breakpoint.Sm" Dense="true" Class="mt-2" FixedHeader="true"
+			Items="@OnGroundDepartures"
+			GroupBy="@_pilotGroupDefinition"
+			GroupHeaderStyle="background-color:var(--mud-palette-background-grey)">
+			<ColGroup>
+				<col style="width: 60px;" />
+				<col />
+				<col />
+			</ColGroup>
+			<HeaderContent>
+				<MudTh>Callsign</MudTh>
+				<MudTh>Route</MudTh>
+			</HeaderContent>
+			<GroupHeaderTemplate>
+				<MudTh Class="mud-table-cell-custom-group" colspan="5">@context.Key: @context.Items.Count() departures</MudTh>
+			</GroupHeaderTemplate>
+			<RowTemplate>
+				<MudTd DataLabel="Callsign">@context.Callsign</MudTd>
+				<MudTd DataLabel="Route">@context.FlightPlan.Route</MudTd>
+			</RowTemplate>
+		</MudTable>
+	</MudPaper>
+}
+
+@if (OnGroundNoFlightPlan is not null)
+{
+	<MudPaper Class="pa-5 ma-2">
+		<h3>On Ground Without Flightplan</h3>
+		<MudText>Number of Aircraft: @OnGroundNoFlightPlan.Count</MudText>
+	</MudPaper>
+}
+
+@if (Prefiles is not null)
+{
+	<MudPaper Class="pa-5 ma-2">
+		<h3>Prefiled Flights (not connected)</h3>
+		<MudTable Hover="true" Breakpoint="Breakpoint.Sm" Dense="true" Class="mt-2" FixedHeader="true"
+			Items="@Prefiles"
+			GroupBy="@_prefileGroupDefinition"
+			GroupHeaderStyle="background-color:var(--mud-palette-background-grey)">
+			<ColGroup>
+				<col style="width: 60px;" />
+				<col />
+				<col />
+			</ColGroup>
+			<HeaderContent>
+				<MudTh>Callsign</MudTh>
+				<MudTh>Route</MudTh>
+			</HeaderContent>
+			<GroupHeaderTemplate>
+				<MudTh Class="mud-table-cell-custom-group" colspan="5">@context.Key: @context.Items.Count() departures</MudTh>
+			</GroupHeaderTemplate>
+			<RowTemplate>
+				<MudTd DataLabel="Callsign">@context.Callsign</MudTd>
+				<MudTd DataLabel="Route">@context.FlightPlan.Route</MudTd>
+			</RowTemplate>
+		</MudTable>
+	</MudPaper>
+}
+
+@code {
+	private string? _airportIcaoId;
+	public string? AirportIcaoId
+	{
+		get => _airportIcaoId;
+		set
+		{
+			_airportIcaoId = value?.ToUpper();
+			UpdateOnUserAirportInput();
+		}
+	}
+
+	public List<VatsimJsonPilot>? OnGroundDepartures { get; set; }
+	public List<VatsimJsonPilot>? OnGroundNoFlightPlan { get; set; }
+	public List<VatsimJsonPrefile>? Prefiles { get; set; }
+
+	private Airport? _currentAirport;
+
+	private TableGroupDefinition<VatsimJsonPilot> _pilotGroupDefinition = new()
+    {
+        GroupName = "Destination",
+        Indentation = false,
+        Expandable = true,
+        IsInitiallyExpanded = false,
+        Selector = (p) => p.FlightPlan.Arrival
+    };
+
+	private TableGroupDefinition<VatsimJsonPrefile> _prefileGroupDefinition = new()
+	{
+		GroupName = "Destination",
+		Indentation = false,
+		Expandable = true,
+		IsInitiallyExpanded = false,
+		Selector = (p) => p.FlightPlan.Arrival
+	};
+
+	private async Task UpdateOnUserAirportInput()
+	{
+		_currentAirport = await Http.GetFromJsonAsync<Airport>($"api/v1/airports/{_airportIcaoId}");
+		await UpdateDisplayedDeparturesAndPrefiles();
+	}
+
+
+	private async Task UpdateDisplayedDeparturesAndPrefiles()
+	{
+		var allConnectedPilots = await Http.GetFromJsonAsync<List<VatsimJsonPilot>>("api/v1/vatsim/pilots");
+		var allPrefiledPlans = await Http.GetFromJsonAsync<List<VatsimJsonPrefile>>("api/v1/vatsim/prefiles");
+
+		if (_currentAirport is not null)
+		{
+			OnGroundDepartures = allConnectedPilots?
+				.Where(p =>
+					p.FlightPlan is not null
+					&& string.Equals(p.FlightPlan.Departure, _currentAirport.IcaoId, StringComparison.OrdinalIgnoreCase)
+					&& IsOnGroundAtAirport(p, _currentAirport))
+				.ToList();
+			OnGroundNoFlightPlan = allConnectedPilots?
+				.Where(p =>
+					p.FlightPlan is null
+					&& IsOnGroundAtAirport(p, _currentAirport))
+				.ToList();
+			Prefiles = allPrefiledPlans?
+				.Where(p => string.Equals(p.FlightPlan.Departure, _currentAirport.IcaoId, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+		}		
+
+		StateHasChanged();
+	}
+
+	private bool IsOnGroundAtAirport(VatsimJsonPilot pilot, Airport airport, int maxGroundspeed = 40, int maxElevationDelta = 200, double distanceRangeMiles = 4.0)
+	{
+		if (pilot.Latitude is null || pilot.Longitude is null)
+		{
+			return false;
+		}
+		else
+		{
+			var pilotCoord = new Coordinate((double)pilot.Latitude, (double)pilot.Longitude);
+			return pilot.Groundspeed < maxGroundspeed
+				&& (pilot.Altitude is not null && Math.Abs((double)pilot.Altitude - airport.Elevation) < maxElevationDelta)
+				&& Coordinate.EuclideanDistanceBetween(pilotCoord, airport.Location) < distanceRangeMiles;
+		}
+	}
+}
