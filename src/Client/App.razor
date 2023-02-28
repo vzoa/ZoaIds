@@ -1,4 +1,8 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿@using ZoaIds.Client.Services
+@inject StateContainer StateContainer
+@inject VatsimDatafeedUpdater VatsimDataService
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
@@ -9,3 +13,11 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        VatsimDataService.StartUpdateLoop();
+    }
+}

@@ -37,7 +37,7 @@ public class AirportsController : ControllerBase
 		return returnAirports.Count switch
 		{
 			1  => Ok(returnAirports.First()),
-			>1 => Ok(returnAirports),
+			>1 => Ok(returnAirports.ToDictionary(a => a.IcaoId!, a => a)),
 			_  => NotFound()
 		};
 	}
