@@ -2,6 +2,7 @@
 @using System.Text.Json
 @using ZoaIds.Shared.Models
 @using ZoaIds.Shared.ExternalDataModels
+@using ZoaIds.Shared.Extensions
 @using ZoaIds.Client.Services
 @using ZoaIds.Client.ApiClients
 @implements IDisposable
@@ -126,7 +127,8 @@
 
 	protected override void OnInitialized()
 	{
-		StateContainer.OnChange += UpdateDisplayedDeparturesAndPrefiles;
+		StateContainer.OnDatafeedUpdate += UpdateDisplayedDeparturesAndPrefiles;
+		StateContainer.OnDataChange += UpdateDisplayedDeparturesAndPrefiles;
 		if (StateContainer.SelectedTowerCabAirport is not null)
 		{
 			AirportIcaoId = StateContainer.SelectedTowerCabAirport.IcaoId;
@@ -159,28 +161,18 @@
 		StateHasChanged();
 	}
 
-	private IEnumerable<VatsimJsonPilot> FilterPilotsOnGroundAtAirport(List<VatsimJsonPilot> allPilots, Airport airport)
-	{
-		return allPilots.Where(p => IsOnGroundAtAirport(p, airport));
-	}
-
-	private IEnumerable<VatsimJsonPilot> FilterPrefilesDepartingAirport(List<VatsimJsonPilot> allPilots, Airport airport)
-	{
-		return allPilots.Where(p => string.Equals(p.FlightPlan.Departure, airport.IcaoId, StringComparison.OrdinalIgnoreCase));
-	}
-
 	private AirportDepartureSummary CreateAirportDepartureSummary(IEnumerable<VatsimJsonPilot> allPilots, IEnumerable<VatsimJsonPrefile> allPrefiles, Airport airport)
 	{
 		var onGroundDepartures = allPilots
 			.Where(p =>
 				p.FlightPlan is not null
 				&& string.Equals(p.FlightPlan.Departure, airport.IcaoId, StringComparison.OrdinalIgnoreCase)
-				&& IsOnGroundAtAirport(p, airport))
+				&& p.IsOnGroundAtAirport(airport))
 			.ToList();
 		var onGroundNoFlightPlan = allPilots
 			.Where(p =>
 				p.FlightPlan is null
-				&& IsOnGroundAtAirport(p, airport))
+				&& p.IsOnGroundAtAirport(airport))
 			.ToList();
 		var departurePrefiles = allPrefiles
 			.Where(p => string.Equals(p.FlightPlan.Departure, airport.IcaoId, StringComparison.OrdinalIgnoreCase))
@@ -189,25 +181,11 @@
 		return new AirportDepartureSummary(onGroundDepartures, onGroundNoFlightPlan, departurePrefiles);
 	}
 
-	private bool IsOnGroundAtAirport(VatsimJsonPilot pilot, Airport airport, int maxGroundspeed = 40, int maxElevationDelta = 200, double distanceRangeMiles = 4.0)
-	{
-		if (pilot.Latitude is null || pilot.Longitude is null)
-		{
-			return false;
-		}
-		else
-		{
-			var pilotCoord = new GeoCoordinate((double)pilot.Latitude, (double)pilot.Longitude);
-			return pilot.Groundspeed < maxGroundspeed
-				&& (pilot.Altitude is not null && Math.Abs((double)pilot.Altitude - airport.Elevation) < maxElevationDelta)
-				&& pilotCoord.EuclideanDistanceFrom(airport.Location) < distanceRangeMiles;
-		}
-	}
-
 	public record AirportDepartureSummary(List<VatsimJsonPilot> OnGroundDepartures, List<VatsimJsonPilot> OnGroundNoFlightPlan, List<VatsimJsonPrefile> DeparturePrefiles) { }
 
 	public void Dispose()
 	{
-		StateContainer.OnChange -= UpdateDisplayedDeparturesAndPrefiles;
+		StateContainer.OnDatafeedUpdate -= UpdateDisplayedDeparturesAndPrefiles;
+		StateContainer.OnDataChange -= UpdateDisplayedDeparturesAndPrefiles;
 	}
 }

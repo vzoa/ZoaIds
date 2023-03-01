@@ -1,0 +1,37 @@
+﻿@page "/cabview"
+@using System.Text.Json;
+@using ZoaIds.Shared.Models;
+@using ZoaIds.Client.Services;
+@using ZoaIds.Client.ApiClients;
+@using ZoaIds.Shared.Extensions;
+@inject StateContainer StateContainer
+@inject AirportsApiClient AirportsApiClient
+@inject ILogger<CabView> Logger
+
+<h3>Reference</h3>
+
+<MudSelect Value="@StateContainer.SelectedTowerCabAirport?.IcaoId" Placeholder="Select an airport" Dense="true" ValueChanged="@UpdateSelectedAirportOnChange" T="string">
+	@foreach (var airport in Constants.ZoaClassB)
+	{
+		<MudSelectItem Value="airport">@airport</MudSelectItem>
+	}
+	<MudDivider />
+	@foreach (var airport in Constants.ZoaClassC)
+	{
+		<MudSelectItem Value="airport">@airport</MudSelectItem>
+	}
+	<MudDivider />
+	@foreach (var airport in Constants.ZoaClassD)
+	{
+		<MudSelectItem Value="airport">@airport</MudSelectItem>
+	}
+</MudSelect>
+
+<CabControllersOnline Airport="@StateContainer.SelectedTowerCabAirport" />
+
+@code {
+	public async Task UpdateSelectedAirportOnChange(string airportIcaoId)
+	{
+		StateContainer.SelectedTowerCabAirport = await AirportsApiClient.GetAirportByIcao(airportIcaoId);
+	}
+}

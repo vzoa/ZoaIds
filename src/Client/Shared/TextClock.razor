@@ -1,0 +1,41 @@
+﻿@using ZoaIds.Client.Services
+@inject StateContainer StateContainer
+@implements IDisposable
+
+<MudText>@TimeString</MudText>
+
+@code {
+    [Parameter]
+    public string Format { get; set; } = "HH:mm:ss";
+
+    private string _timeString = string.Empty;
+    public string TimeString
+    {
+        get => _timeString;
+        set
+        {
+            _timeString = value;
+            StateHasChanged();
+        }
+    }
+
+    private string _oldTimeString = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        StateContainer.OnTimeChange += UpdateTimeString;
+    }
+    public void Dispose()
+    {
+        StateContainer.OnTimeChange -= UpdateTimeString;
+    }
+
+    private void UpdateTimeString()
+    {
+        var newTimeString = StateContainer.Now.ToString(Format);
+        if (!newTimeString.Equals(_timeString))
+        {
+            TimeString = newTimeString;
+        }
+    }
+}

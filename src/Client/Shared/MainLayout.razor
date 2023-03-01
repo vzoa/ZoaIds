@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @using System.Threading
+@using ZoaIds.Client.Services
+@inject StateContainer StateContainer
 @implements IDisposable
 
 <MudThemeProvider IsDarkMode="true" />
@@ -8,7 +10,7 @@
 
 <MudLayout>
     <MudAppBar Elevation="0" Dense="true">
-        <MudText>@CurrentTimeString</MudText>
+        <TextClock />
         @*<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />*@
         <MudStack Row="true" Spacing="5" Class="ml-10">
             <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Home" Href="charts">Overview</MudButton>
@@ -17,6 +19,7 @@
             <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Map" Href="charts">Charts</MudButton>
             <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.MenuBook" Href="/reference">Reference</MudButton>
             <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.MenuBook" Href="/departures">Departures</MudButton>
+            <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.MenuBook" Href="/cabview">Tower Cab</MudButton>
         </MudStack>
         
         <MudSpacer />
@@ -39,8 +42,6 @@
     //bool _drawerOpen = true;
 
     private Timer? _timer;
-    public string CurrentTimeString { get; set; } = "";
-    private static readonly string _format = "HH:mm:ss";
 
     //void DrawerToggle()
     //{
@@ -50,19 +51,16 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        _timer = new Timer(UpdateClock, null, 0, 250);
+        _timer = new Timer(OnClockTick, null, 0, 250);
     }
 
-    private void UpdateClock(object? stateInfo)
+    private void OnClockTick(object? stateInfo)
     {
-        var now = DateTime.UtcNow;
-        CurrentTimeString = now.ToString(_format);
-        StateHasChanged();
+        StateContainer.Now = DateTime.UtcNow;
     }
 
     public void Dispose()
     {
         _timer?.Dispose();
     }
-
 }

@@ -2,8 +2,12 @@
 
 public static class Constants
 {
-	public const string ApiBase = "api/v1/";
+	public static readonly string[] ZoaClassB = { "KSFO" };
+	public static readonly string[] ZoaClassC = { "KOAK", "KSJC", "KSMF", "KRNO", "KFAT", "KMRY" };
+	public static readonly string[] ZoaClassD = { "KAPC", "KCCR", "KCIC", "KHWD", "KLVK", "KMER", "KMHR", "KMOD",
+		"KNUQ", "KPAO", "KRDD", "KRHV", "KSAC", "KSCK", "KSNS", "KSQL", "KSTS", "KTRK" };
 
+	public const string ApiBase = "api/v1/";
 	public static class ApiEndpoints
 	{
 		public const string Vatsim = "vatsim";

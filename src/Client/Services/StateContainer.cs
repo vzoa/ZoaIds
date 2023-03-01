@@ -5,7 +5,9 @@ namespace ZoaIds.Client.Services;
 
 public class StateContainer
 {
-	public event Action? OnChange;
+    public event Action? OnDatafeedUpdate;
+    public event Action? OnDataChange;
+	public event Action? OnTimeChange;
 
 	private VatsimJsonRoot? _vatsimDatafeed;
 	public VatsimJsonRoot? VatsimDatafeed
@@ -14,7 +16,7 @@ public class StateContainer
 		set
 		{
 			_vatsimDatafeed = value;
-			NotifyStateChanged();
+			NotifyDatafeedUpdated();
 		}
 	}
 
@@ -25,9 +27,22 @@ public class StateContainer
 		set
 		{
 			_selectedTowerCabAirport = value;
-			NotifyStateChanged();
+			NotifyDataStateChanged();
 		}
 	}
 
-	private void NotifyStateChanged() => OnChange?.Invoke();
+	private DateTime _now = DateTime.UtcNow;
+	public DateTime Now
+	{
+		get => _now;
+		set
+		{
+			_now = value;
+			NotifyTimeStateChanged();
+		}
+	}
+
+    private void NotifyDatafeedUpdated() => OnDatafeedUpdate?.Invoke();
+    private void NotifyDataStateChanged() => OnDataChange?.Invoke();
+	private void NotifyTimeStateChanged() => OnTimeChange?.Invoke();
 }
