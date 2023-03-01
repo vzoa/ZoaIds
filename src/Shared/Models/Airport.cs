@@ -9,7 +9,7 @@ public class Airport
     public AirportType Type { get; set; }
 	public int? TrueToMagneticDelta { get; set; }
     public int? MagneticToTrueDelta => TrueToMagneticDelta is null ? null : -1 * TrueToMagneticDelta;
-    public Coordinate Location { get; set; }
+    public GeoCoordinate Location { get; set; }
     public double Elevation { get; set; }
     public string Artcc { get; set; }
     public ICollection<Runway> Runways { get; set; } = new List<Runway>();

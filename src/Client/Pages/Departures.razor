@@ -3,8 +3,9 @@
 @using ZoaIds.Shared.Models
 @using ZoaIds.Shared.ExternalDataModels
 @using ZoaIds.Client.Services
+@using ZoaIds.Client.ApiClients
 @implements IDisposable
-@inject HttpClient Http
+@inject AirportsApiClient AirportsApiClient
 @inject ILogger<Charts> Logger
 @inject StateContainer StateContainer
 
@@ -134,15 +135,18 @@
 
 	private async Task UpdateOnUserAirportInput()
 	{
-		_currentAirport = await Http.GetFromJsonAsync<Airport>($"api/v1/airports/{_airportIcaoId}");
-		StateContainer.SelectedTowerCabAirport = _currentAirport;
-		UpdateDisplayedDeparturesAndPrefiles();
+		if (!string.IsNullOrWhiteSpace(_airportIcaoId))
+		{
+			_currentAirport = await AirportsApiClient.GetAirportByIcao(_airportIcaoId);
+			StateContainer.SelectedTowerCabAirport = _currentAirport;
+			UpdateDisplayedDeparturesAndPrefiles();
+		}
 	}
 
 	private void UpdateDisplayedDeparturesAndPrefiles()
 	{
-		var allConnectedPilots = StateContainer.VatsimDatafeed?.Pilots; //await Http.GetFromJsonAsync<List<VatsimJsonPilot>>("api/v1/vatsim/pilots");
-		var allPrefiledPlans = StateContainer.VatsimDatafeed?.Prefiles; //await Http.GetFromJsonAsync<List<VatsimJsonPrefile>>("api/v1/vatsim/prefiles");
+		var allConnectedPilots = StateContainer.VatsimDatafeed?.Pilots;
+		var allPrefiledPlans = StateContainer.VatsimDatafeed?.Prefiles;
 
 		if (_currentAirport is not null && allConnectedPilots is not null && allPrefiledPlans is not null)
 		{
@@ -193,10 +197,10 @@
 		}
 		else
 		{
-			var pilotCoord = new Coordinate((double)pilot.Latitude, (double)pilot.Longitude);
+			var pilotCoord = new GeoCoordinate((double)pilot.Latitude, (double)pilot.Longitude);
 			return pilot.Groundspeed < maxGroundspeed
 				&& (pilot.Altitude is not null && Math.Abs((double)pilot.Altitude - airport.Elevation) < maxElevationDelta)
-				&& Coordinate.EuclideanDistanceBetween(pilotCoord, airport.Location) < distanceRangeMiles;
+				&& pilotCoord.EuclideanDistanceFrom(airport.Location) < distanceRangeMiles;
 		}
 	}
 

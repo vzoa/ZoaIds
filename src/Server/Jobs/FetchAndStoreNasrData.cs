@@ -173,7 +173,7 @@ public class FetchAndStoreNasrData : IInvocable
             Name = csv.GetField("ARPT_NAME"),
             Elevation = csv.GetField<double>("ELEV"),
             Artcc = csv.GetField("RESP_ARTCC_ID"),
-            Location = new Coordinate(csv.GetField<double>("LAT_DECIMAL"), csv.GetField<double>("LONG_DECIMAL")),
+            Location = new GeoCoordinate(csv.GetField<double>("LAT_DECIMAL"), csv.GetField<double>("LONG_DECIMAL")),
             Type = StringToAirportType(csv.GetField("SITE_TYPE_CODE"))
         };
 

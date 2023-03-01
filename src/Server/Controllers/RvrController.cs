@@ -32,7 +32,7 @@ public class RvrController : ControllerBase
 	}
 
 	[HttpGet("{airportId}/{runwayIds}")]
-	public async Task<IActionResult> GetAirportRvrs(string airportId, string runwayIds)
+	public async Task<IActionResult> GetRunwayRvrsForAirport(string airportId, string runwayIds)
 	{
 		// TODO -- need to add some error handling
 

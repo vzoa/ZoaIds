@@ -135,7 +135,7 @@ public class FetchAndStoreMetars : IInvocable
         // Parse the location and add as Coordinate object to Metar object
 		if (metar.longitudeSpecified && metar.latitudeSpecified)
 		{
-			newMetar.Location = new Coordinate(metar.latitude, metar.longitude);
+			newMetar.Location = new GeoCoordinate(metar.latitude, metar.longitude);
 		}
 
         return newMetar;

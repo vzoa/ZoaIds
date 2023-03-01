@@ -1,8 +1,9 @@
 ﻿@page "/atis"
 @implements IDisposable
 @using System.Text.Json
+@using ZoaIds.Client.ApiClients
 @using AtisModel = ZoaIds.Shared.Models.Atis
-@inject HttpClient Http
+@inject DatisApiClient DatisApiClient
 @inject ILogger<Atis> Logger
 
 <h3>Atis</h3>
@@ -40,8 +41,8 @@
 
 	private async Task UpdateAtis()
 	{
-		var newAtisList = await Http.GetFromJsonAsync<List<AtisModel>>("/api/v1/datis");
-		DisplayedAtisList = newAtisList;
+		var newAtisList = await DatisApiClient.GetAllAtis();
+		DisplayedAtisList = newAtisList.Values.ToList();
 		StateHasChanged();
 	}
 

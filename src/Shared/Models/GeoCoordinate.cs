@@ -1,6 +1,6 @@
 ﻿namespace ZoaIds.Shared.Models;
 
-public class Coordinate
+public class GeoCoordinate
 {
 	public double Latitude { get; set; }
 	public double Longitude { get; set; }
@@ -8,18 +8,23 @@ public class Coordinate
 	private const double _earthRadiusKm = 6371;
 	private const double _degToRadConversionFactor = Math.PI / 180.0;
 
-	public Coordinate() { }
+	public GeoCoordinate() { }
 
-	public Coordinate(double lat, double lng)
+	public GeoCoordinate(double lat, double lng)
 	{
 		Latitude = lat;
 		Longitude = lng;
 	}
 
-	public static double EuclideanDistanceBetween(Coordinate c1, Coordinate c2, DistanceUnit returnUnit = DistanceUnit.StatuteMile)
+	public double EuclideanDistanceFrom(GeoCoordinate otherCoord, DistanceUnit returnUnit = DistanceUnit.StatuteMile)
 	{
-		var c1Rad = new Coordinate(c1.Latitude * _degToRadConversionFactor, c1.Longitude * _degToRadConversionFactor);
-		var c2Rad = new Coordinate(c2.Latitude * _degToRadConversionFactor, c2.Longitude * _degToRadConversionFactor);
+		return EuclideanDistanceBetween(this, otherCoord, returnUnit);
+	}
+
+	public static double EuclideanDistanceBetween(GeoCoordinate c1, GeoCoordinate c2, DistanceUnit returnUnit = DistanceUnit.StatuteMile)
+	{
+		var c1Rad = new GeoCoordinate(c1.Latitude * _degToRadConversionFactor, c1.Longitude * _degToRadConversionFactor);
+		var c2Rad = new GeoCoordinate(c2.Latitude * _degToRadConversionFactor, c2.Longitude * _degToRadConversionFactor);
 		double unitlessDistance = Math.Sqrt(2) *
 			Math.Sqrt(1
 				- (Math.Cos(c1Rad.Latitude) * Math.Cos(c2Rad.Latitude) * Math.Cos(c1Rad.Longitude - c2Rad.Longitude))

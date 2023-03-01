@@ -21,8 +21,11 @@ builder.Services.AddScoped<StateContainer>();
 builder.Services.AddScoped<VatsimDatafeedUpdater>();
 
 // Injectable API endpoint-specific HTTP clients with the base address set to the API base (default is "api/v1/")
-var apiBase = builder.HostEnvironment.BaseAddress + Constants.ApiBase;
-builder.Services.AddHttpClient<VatsimApiClient>(client => client.BaseAddress = new Uri(apiBase));
-builder.Services.AddHttpClient<DatisApiClient>(client => client.BaseAddress = new Uri(apiBase));
+var apiBaseUri = new Uri(builder.HostEnvironment.BaseAddress + Constants.ApiBase);
+builder.Services.AddHttpClient<VatsimApiClient>(client => client.BaseAddress = apiBaseUri);
+builder.Services.AddHttpClient<DatisApiClient>(client => client.BaseAddress = apiBaseUri);
+builder.Services.AddHttpClient<ChartsApiClient>(client => client.BaseAddress = apiBaseUri);
+builder.Services.AddHttpClient<ZoaDocumentsApiClient>(client => client.BaseAddress = apiBaseUri);
+builder.Services.AddHttpClient<AirportsApiClient>(client => client.BaseAddress = apiBaseUri);
 
 await builder.Build().RunAsync();

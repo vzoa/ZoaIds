@@ -1,7 +1,8 @@
 ﻿@page "/reference"
 @using System.Text.Json;
 @using ZoaIds.Shared.Models;
-@inject HttpClient Http
+@using ZoaIds.Client.ApiClients;
+@inject ZoaDocumentsApiClient ZoaDocumentsApiClient
 @inject ILogger<Reference> Logger
 
 <h3>Reference</h3>
@@ -31,6 +32,6 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		FetchedDocs = await Http.GetFromJsonAsync<List<ArtccDocument>>("api/v1/zoadocuments");
+		FetchedDocs = await ZoaDocumentsApiClient.GetAllDocuments();
 	}
 }

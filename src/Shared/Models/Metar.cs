@@ -6,7 +6,7 @@ public class Metar
     public string RawText { get; set; }
     public DateTime ObservationTime { get; set; }
     public MetarType Type { get; set; }
-    public Coordinate? Location { get; set; }
+    public GeoCoordinate? Location { get; set; }
     public WindObservation? Wind { get; set; }
     public ICollection<SkyCoverObservation>? SkyCovers { get; set; }
     public string? WeatherString { get; set; }

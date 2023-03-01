@@ -13,7 +13,7 @@ public class DatisApiClient
 		_httpClient = httpClient;
 	}
 
-	public async Task<Dictionary<string, Atis>> GetAllDatis()
+	public async Task<Dictionary<string, Atis>> GetAllAtis()
 	{
 		return await _httpClient.GetFromJsonAsync<Dictionary<string, Atis>>(_baseUri);
 	}
@@ -23,15 +23,15 @@ public class DatisApiClient
 		return await _httpClient.GetFromJsonAsync<Atis>($"{_baseUri}/{airportIcaoId}");
 	}
 
-	public async Task<Dictionary<string, Atis>> GetManyAirportsAtis(IEnumerable<string> airportsIcaoIds)
+	public async Task<Dictionary<string, Atis>> GetAirportsAtises(IEnumerable<string> airportsIcaoIds)
 	{
 		var airportsIds = string.Join(",", airportsIcaoIds);
 		return await _httpClient.GetFromJsonAsync<Dictionary<string, Atis>>($"{_baseUri}/{airportsIds}");
 	}
 
-	public async Task<Dictionary<string, Atis>> GetManyAirportsAtis(IEnumerable<Airport> airports)
+	public async Task<Dictionary<string, Atis>> GetAirportsAtises(IEnumerable<Airport> airports)
 	{
 		var airportsIds = airports.Select(a => a.IcaoId);
-		return await GetManyAirportsAtis(airportsIds);
+		return await GetAirportsAtises(airportsIds);
 	}
 }
