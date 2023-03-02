@@ -8,7 +8,7 @@
 <MudText>@StateContainer.SelectedTowerCabAirport?.Name</MudText>
 @foreach (var controller in OnlineControllers)
 {
-    <MudText>@controller.Callsign - @controller.Cid</MudText>
+    <MudText>@controller.Callsign - @controller.Cid - @controller.SingleLineAtis()</MudText>
 }
 
 
@@ -25,6 +25,7 @@
 
     protected override void OnParametersSet()
     {
+        // When the Airport parameter is changed, we need to update the controller information
         UpdateControllerList();
     }
 

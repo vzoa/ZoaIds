@@ -59,4 +59,9 @@ public static class VatsimJsonRootExtensions
     {
         return vatsimJsonRoot.Controllers.Where(c => c.Callsign.StartsWith(airportPrefix, StringComparison.OrdinalIgnoreCase));
     }
+
+    public static IEnumerable<VatsimJsonController> GetControllersBySuffix(this VatsimJsonRoot vatsimJsonRoot, string airportSuffix)
+    {
+        return vatsimJsonRoot.Controllers.Where(c => c.Callsign.EndsWith(airportSuffix, StringComparison.OrdinalIgnoreCase));
+    }
 }

@@ -3,9 +3,33 @@
 namespace ZoaIds.Shared.ExternalDataModels;
 
 // Root myDeserializedClass = JsonSerializer.Deserialize<VatsimJsonRoot>(myJsonResponse);
-// Generated from https://json2csharp.com/
+// Generated from https://json2csharp.com/ with additional interfaces from Ken Greim
 
-public class VatsimJsonAtis
+public interface IVatsimPilotActivity
+{
+	public int? Cid { get; set; }
+	public string Name { get; set; }
+	public string Callsign { get; set; }
+	public VatsimJsonFlightPlan FlightPlan { get; set; }
+	public DateTime? LastUpdated { get; set; }
+}
+
+public interface IVatsimControlConnection
+{
+	public int? Cid { get; set; }
+	public string Name { get; set; }
+	public string Callsign { get; set; }
+	public string Frequency { get; set; }
+	public int? Facility { get; set; }
+	public int? Rating { get; set; }
+	public string Server { get; set; }
+	public int? VisualRange { get; set; }
+	public List<string> TextAtis { get; set; }
+	public DateTime? LastUpdated { get; set; }
+	public DateTime? LogonTime { get; set; }
+}
+
+public class VatsimJsonAtis : IVatsimControlConnection
 {
     [JsonPropertyName("cid")]
     public int? Cid { get; set; }
@@ -44,7 +68,7 @@ public class VatsimJsonAtis
     public DateTime? LogonTime { get; set; }
 }
 
-public class VatsimJsonController
+public class VatsimJsonController : IVatsimControlConnection
 {
     [JsonPropertyName("cid")]
     public int? Cid { get; set; }
@@ -164,7 +188,7 @@ public class VatsimJsonGeneralInfo
     public int? UniqueUsers { get; set; }
 }
 
-public class VatsimJsonPilot
+public class VatsimJsonPilot : IVatsimPilotActivity
 {
     [JsonPropertyName("cid")]
     public int? Cid { get; set; }
@@ -227,7 +251,7 @@ public class VatsimJsonPilotRating
     public string LongName { get; set; }
 }
 
-public class VatsimJsonPrefile
+public class VatsimJsonPrefile : IVatsimPilotActivity
 {
     [JsonPropertyName("cid")]
     public int? Cid { get; set; }
