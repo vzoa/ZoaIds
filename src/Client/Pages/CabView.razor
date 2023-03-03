@@ -1,9 +1,4 @@
 ﻿@page "/cabview"
-@using System.Text.Json;
-@using ZoaIds.Shared.Models;
-@using ZoaIds.Client.Services;
-@using ZoaIds.Client.ApiClients;
-@using ZoaIds.Shared.Extensions;
 @inject StateContainer StateContainer
 @inject AirportsApiClient AirportsApiClient
 @inject ILogger<CabView> Logger
@@ -30,6 +25,9 @@
 <CabControllersOnline Airport="@StateContainer.SelectedTowerCabAirport" />
 
 <GroundSummary Airport="@StateContainer.SelectedTowerCabAirport" />
+
+<CountdownTimer InitialDuration="@TimeSpan.FromMinutes(2)" />
+
 @*<GroundSummary Airport="@KLAX" />*@
 
 @code {

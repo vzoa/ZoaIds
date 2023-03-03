@@ -11,7 +11,6 @@
 <MudLayout>
     <MudAppBar Elevation="0" Dense="true">
         <TextClock />
-        @*<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />*@
         <MudStack Row="true" Spacing="5" Class="ml-10">
             <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Home" Href="charts">Overview</MudButton>
             <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Cloud" Href="charts">Weather</MudButton>
@@ -25,12 +24,6 @@
         <MudSpacer />
         <MudText Color="Color.Warning"><b>ZOA IDS</b></MudText>
     </MudAppBar>
-@*    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6">ZoaIds</MudText>
-        </MudDrawerHeader>
-        <NavMenu />
-    </MudDrawer>*@
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.False" Class="my-2 pt-5">
             @Body

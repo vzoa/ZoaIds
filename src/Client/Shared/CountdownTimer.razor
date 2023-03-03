@@ -1,0 +1,96 @@
+﻿@inject StateContainer StateContainer
+@implements IDisposable
+
+<div @onclick="@(() => HandleClick())">
+	<MudText>@_displayedTimeString</MudText>
+</div>
+
+
+@code {
+	[Parameter, EditorRequired]
+	public TimeSpan InitialDuration { get; set; } = TimeSpan.Zero;
+
+	[Parameter]
+	public string FormatString { get; set; } = @"m\:ss";
+
+	private TimeSpan _timeRemaining { get; set; } = TimeSpan.Zero;
+	private DateTime _endTime { get; set; } = DateTime.UtcNow;
+	private TimerState _state { get; set; } = TimerState.Paused;
+	private string _displayedTimeString = string.Empty;
+
+	private void Update()
+	{
+		// Return early if timer is not running. Don't need to update display
+		// in that case
+		if (_state != TimerState.Running) { return; }
+
+		_timeRemaining = _endTime - DateTime.UtcNow;
+		if (_timeRemaining > TimeSpan.Zero)
+		{
+			var newTimeString = (_endTime - DateTime.UtcNow).ToString(FormatString);
+			if (!_displayedTimeString.Equals(newTimeString))
+			{
+				_displayedTimeString = newTimeString;
+				StateHasChanged();
+			}
+		}
+		else
+		{
+			// Stop the timer
+			_state = TimerState.Completed;
+		}
+	}
+
+	private void StartTimer()
+	{
+		_state = TimerState.Running;
+		_endTime = DateTime.UtcNow + _timeRemaining;
+	}
+
+	private void ResetTimer()
+	{
+		_state = TimerState.Paused;
+		_timeRemaining = InitialDuration;
+	}
+
+	private void PauseTimer()
+	{
+		_state = TimerState.Paused;
+	}
+
+	private void HandleClick()
+	{
+		switch (_state)
+		{
+			case TimerState.Running:
+				PauseTimer();
+				break;
+			case TimerState.Paused:
+				StartTimer();
+				break;
+			case TimerState.Completed:
+				ResetTimer();
+				break;
+		}
+	}
+
+	protected override void OnInitialized()
+	{
+		StateContainer.OnTimeChange += Update;
+		_timeRemaining = InitialDuration;
+		_displayedTimeString = _timeRemaining.ToString(FormatString);
+		//StartTimer();
+	}
+
+	public void Dispose()
+	{
+		StateContainer.OnTimeChange -= Update;
+	}
+
+	public enum TimerState
+	{
+		Running,
+		Paused,
+		Completed
+	}
+}
