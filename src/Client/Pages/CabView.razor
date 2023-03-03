@@ -30,7 +30,7 @@
 <CabControllersOnline Airport="@StateContainer.SelectedTowerCabAirport" />
 
 <GroundSummary Airport="@StateContainer.SelectedTowerCabAirport" />
-<GroundSummary Airport="@KLAX" />
+@*<GroundSummary Airport="@KLAX" />*@
 
 @code {
 	public async Task UpdateSelectedAirportOnChange(string airportIcaoId)
@@ -38,9 +38,9 @@
 		StateContainer.SelectedTowerCabAirport = await AirportsApiClient.GetAirportByIcao(airportIcaoId);
 	}
 
-	public Airport KLAX { get; set; }
-	protected override async Task OnInitializedAsync()
-	{
-		KLAX = await AirportsApiClient.GetAirportByIcao("KLAX");
-	}	
+	//public Airport KLAX { get; set; }
+	//protected override async Task OnInitializedAsync()
+	//{
+	//	KLAX = await AirportsApiClient.GetAirportByIcao("KLAX");
+	//}	
 }

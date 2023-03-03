@@ -4,6 +4,7 @@
 @using ZoaIds.Shared.Extensions
 @using ZoaIds.Client.Services
 @using ZoaIds.Client.ApiClients
+@using ZoaIds.Client.Shared.RazorModels
 @implements IDisposable
 @inject StateContainer StateContainer
 
@@ -18,83 +19,17 @@
 {
 	<MudPaper Class="pa-5 ma-2">
 		<h3>Filed Departures on Ground for @Airport.Name: @OnGroundDepartures.Sum(r => r.Count)</h3>
-		@if (OnGroundDepartures.Count > 0)
-		{
+		<FlightSummaryPanels FlightSummaries="@OnGroundDepartures" />
+	</MudPaper>
 
-			<MudExpansionPanels MultiExpansion="true">
-				@foreach (var summary in OnGroundDepartures)
-				{
-					<MudExpansionPanel>
-						<TitleContent>
-							<div class="d-flex">
-								<MudAvatar Size="Size.Small" Color="Color.Primary" class="mr-3">@summary.Count</MudAvatar>
-								<MudText>@summary.Airport</MudText>
-							</div>
-						</TitleContent>
-						<ChildContent>
-							<MudTable Items="@summary.Flights" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Dense="true">
-								<ColGroup>
-									<col />
-									<col />
-								</ColGroup>
-								<HeaderContent>
-									<MudTh>Callsign</MudTh>
-									<MudTh>Route</MudTh>
-								</HeaderContent>
-								<RowTemplate>
-									<MudTd DataLabel="Callsign">@context.Callsign</MudTd>
-									<MudTd DataLabel="Route">@context.FlightPlan.Route</MudTd>
-								</RowTemplate>
-							</MudTable>
-						</ChildContent>
-					</MudExpansionPanel>
-				}
-			</MudExpansionPanels>
+	<MudPaper Class="pa-5 ma-2">
+		<h3>Prefiled Departures on Ground for @Airport.Name: @Prefiles.Sum(r => r.Count)</h3>
+		<FlightSummaryPanels FlightSummaries="@Prefiles" />
+	</MudPaper>
 
-			
-			
-			
-			
-			
-			@*<MudTable Hover="true" Breakpoint="Breakpoint.Sm" Dense="true" Class="mt-2" FixedHeader="true"
-			  Items="@OnGroundDepartures" OnRowClick="@(args => ShowBtnPress(args.Item.Id))" T="SummaryRow">
-				<ColGroup>
-					<col />
-					<col />
-				</ColGroup>
-				<HeaderContent>
-					<MudTh>Destination</MudTh>
-					<MudTh></MudTh>
-				</HeaderContent>
-				<RowTemplate>
-					<MudTd DataLabel="Destination">@context.Airport - @context.Count</MudTd>
-					<MudTd><MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(() => ShowBtnPress(context.Id))">@(context.ShowDetails ? "Hide" : "Show") Details</MudButton></MudTd>
-				</RowTemplate>
-				<ChildRowContent>
-					@if (context.ShowDetails)
-					{
-						<MudTr>
-							<td colspan="4">
-								<MudTable Items="@context.Flights" Context="FlightContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
-									<ColGroup>
-										<col />
-										<col />
-									</ColGroup>
-									<HeaderContent>
-										<MudTh>Callsign</MudTh>
-										<MudTh>Route</MudTh>
-									</HeaderContent>
-									<RowTemplate>
-										<MudTd DataLabel="Callsign">@FlightContext.Callsign</MudTd>
-										<MudTd DataLabel="Route">@FlightContext.FlightPlan.Route</MudTd>
-									</RowTemplate>
-								</MudTable>
-							</td>
-						</MudTr>
-					}
-				</ChildRowContent>
-			</MudTable>*@
-		}
+	<MudPaper Class="pa-5 ma-2">
+		<h3>Aircraft on Ground without Flightplan for @Airport.Name: @OnGroundWithoutPlan.Sum(r => r.Count)</h3>
+		<FlightSummaryPanels FlightSummaries="@OnGroundWithoutPlan" />
 	</MudPaper>
 }
 
@@ -105,7 +40,6 @@
 	public ICollection<SummaryRow> OnGroundDepartures { get; set; } = new List<SummaryRow>();
 	public ICollection<SummaryRow> OnGroundWithoutPlan { get; set; } = new List<SummaryRow>();
 	public ICollection<SummaryRow> Prefiles { get; set; } = new List<SummaryRow>();
-	//private List<SummaryRow> _combinedList = new List<SummaryRow>();
 
 	private void UpdateDeparturesLists()
 	{
@@ -119,12 +53,6 @@
 
 		var onGroundWithoutPlan = StateContainer.VatsimDatafeed.Pilots.Where(p => p.FlightPlan is null && p.IsOnGroundAtAirport(Airport));
 		OnGroundWithoutPlan = new List<SummaryRow> { new SummaryRow("NONE", onGroundWithoutPlan) };
-
-		//_combinedList.Clear();
-		//_combinedList.AddRange(OnGroundDepartures);
-		//_combinedList.AddRange(OnGroundWithoutPlan);
-		//_combinedList.AddRange(Prefiles);
-		//StateHasChanged();
 	}
 
 	private List<SummaryRow> CreateSummaryRows(IEnumerable<IVatsimPilotActivity> pilots)
@@ -134,12 +62,6 @@
 			.OrderByDescending(g => g.Count()).Select(g => new SummaryRow(g.Key, g))
 			.ToList();
 	}
-
-	//private void ShowBtnPress(Guid guid)
-	//{
-	//	var pressed = _combinedList.Where(r => r.Id == guid).First();
-	//	pressed.ShowDetails = !pressed.ShowDetails;
-	//}
 
 	protected override void OnInitialized()
 	{
@@ -155,22 +77,4 @@
 	{
 		StateContainer.OnDatafeedUpdate -= UpdateDeparturesLists;
 	}
-
-	public class SummaryRow
-	{
-		public string Airport { get; set; }
-		public int Count { get; set; }
-		public IEnumerable<IVatsimPilotActivity> Flights { get; set; }
-		//public Guid Id { get; set; }
-		//public bool ShowDetails { get; set; } = false;
-
-		public SummaryRow(string airport, IEnumerable<IVatsimPilotActivity> flights)
-		{
-			Airport = airport;
-			Flights = flights;
-			Count = flights.Count();
-			//Id = Guid.NewGuid();
-		}
-	}
-
 }

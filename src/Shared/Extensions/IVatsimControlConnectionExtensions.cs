@@ -6,6 +6,14 @@ public static class IVatsimJsonControlConnectionExtensions
 {
 	public static string SingleLineAtis(this IVatsimControlConnection vatsimControlConnection)
 	{
-		return string.Join(" ", vatsimControlConnection.TextAtis);
+		if (vatsimControlConnection.TextAtis is null)
+		{
+			return string.Empty;
+		}
+		else
+		{
+			return string.Join(" ", vatsimControlConnection.TextAtis);
+
+		}
 	}
 }
