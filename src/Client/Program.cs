@@ -27,5 +27,6 @@ builder.Services.AddHttpClient<DatisApiClient>(client => client.BaseAddress = ap
 builder.Services.AddHttpClient<ChartsApiClient>(client => client.BaseAddress = apiBaseUri);
 builder.Services.AddHttpClient<ZoaDocumentsApiClient>(client => client.BaseAddress = apiBaseUri);
 builder.Services.AddHttpClient<AirportsApiClient>(client => client.BaseAddress = apiBaseUri);
+builder.Services.AddHttpClient<WeatherApiClient>(client => client.BaseAddress = apiBaseUri);
 
 await builder.Build().RunAsync();

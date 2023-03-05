@@ -43,4 +43,31 @@ public class RunwayEnd
     public double? TdzElevation { get; set; }
 	public string RunwayName { get; set; }
     public string AirportFaaId { get; set; }
+
+    // Returns positive if headwind, negative if tailwind
+    public double? CalculateHeadwindComponent(int windDirectionTrueDegrees, int windSpeedKnots)
+    {
+        return TrueHeading is null ? null : Math.Cos(DegreesToRad((int)TrueHeading - windDirectionTrueDegrees)) * windSpeedKnots;
+    }
+
+    public double? CalculateHeadwindComponent(WindObservation windObservation)
+    {
+        return CalculateHeadwindComponent(windObservation.DirectionTrueDegrees, windObservation.SpeedKnots);
+    }
+
+    // Returns positive if crosswind coming from left, negative if crosswind coming from right
+	public double? CalculateCrosswindComponent(int windDirectionTrueDegrees, int windSpeedKnots)
+	{
+		return TrueHeading is null ? null : Math.Sin(DegreesToRad((int)TrueHeading - windDirectionTrueDegrees)) * windSpeedKnots;
+	}
+
+	public double? CalculateCrosswindComponent(WindObservation windObservation)
+	{
+		return CalculateCrosswindComponent(windObservation.DirectionTrueDegrees, windObservation.SpeedKnots);
+	}
+
+	private static double DegreesToRad(int degrees)
+    {
+        return (Math.PI / 180) * degrees;
+    }
 }
