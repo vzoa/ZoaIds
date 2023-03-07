@@ -16,5 +16,7 @@ public static class Constants
 		public const string ZoaDocuments = "zoadocuments";
 		public const string Datis = "datis";
 		public const string Weather = "weather";
+		public const string AliasRoutes = "aliasroutes";
+		public const string RealWorldRoutes = "realworldroutes";
 	}
 }
