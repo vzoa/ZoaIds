@@ -9,9 +9,10 @@
 		<MudCard>
 			<MudCardContent>
 				<MudText Typo="Typo.h6">@runway.Name</MudText>
-				<Mudtext>@runway.TrueHeading</Mudtext>
+				<MudText>@runway.TrueHeading</MudText>
 				<MudText>Headwind = @runway.CalculateHeadwindComponent(_localMetar.Wind)</MudText>
 				<MudText>Crosswind = @runway.CalculateCrosswindComponent(_localMetar.Wind)</MudText>
+				<MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Style="@IconRotationString(runway)" />
 			</MudCardContent>
 		</MudCard>
 	}
@@ -23,10 +24,10 @@
 
 	private Metar? _localMetar { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
-		//await FetchAndUpdatedMetar();
-	}
+	//protected override async Task OnInitializedAsync()
+	//{
+	//	await FetchAndUpdatedMetar();
+	//}
 
 	protected override async Task OnParametersSetAsync()
 	{
@@ -40,5 +41,18 @@
 			_localMetar = await WeatherApiClient.GetMetar(Airport);
 		}
 		StateHasChanged();
+	}
+
+	private string IconRotationString(RunwayEnd runway)
+	{
+		if (runway.TrueHeading is null || _localMetar is null || _localMetar.Wind is null)
+		{
+			return string.Empty;
+		}
+		else
+		{
+			var offset = _localMetar.Wind.DirectionTrueDegrees - (int)runway.TrueHeading;
+			return $"transform: rotate({offset}deg);";
+		}
 	}
 }

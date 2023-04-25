@@ -23,14 +23,14 @@ public class Metar
     {
         get
         {
-            var min = SkyCovers?.Where(c => c.Type >= CloudCoverType.BKN).OrderBy(c => c.BaseFtAgl).FirstOrDefault();
+            var min = SkyCovers?.Where(c => c.Coverage >= SkyCoverage.BKN).OrderBy(c => c.BaseFtAgl).FirstOrDefault();
             if (min is null)
             {
                 return null;
             }
             else
             {
-                return min.Type == CloudCoverType.OVX ? VerticalVisibilityFt : min.BaseFtAgl;
+                return min.Coverage == SkyCoverage.OVX ? VerticalVisibilityFt : min.BaseFtAgl;
             }
         }
     }
@@ -45,12 +45,13 @@ public class WindObservation
 
 public class SkyCoverObservation
 {
-    public CloudCoverType Type { get; set; }
+    public SkyCoverage Coverage { get; set; }
     public int? BaseFtAgl { get; set; }
 }
 
-public enum CloudCoverType
+public enum SkyCoverage
 {
+    NSC,
     SKC,
     CLR,
     CAVOK,

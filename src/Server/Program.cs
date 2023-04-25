@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using ZoaIds.Server.Data;
 using ZoaIds.Server.Jobs;
 using ZoaIds.Server.Services;
@@ -113,5 +114,9 @@ app.UseRouting();
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+
+var db = await app.Services.GetRequiredService<IDbContextFactory<ZoaIdsContext>>().CreateDbContextAsync();
+//db.Database.EnsureDeleted();
+db.Database.EnsureCreated();
 
 app.Run();

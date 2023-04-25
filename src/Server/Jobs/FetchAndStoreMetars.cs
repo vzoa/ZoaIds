@@ -1,6 +1,5 @@
 ﻿using Coravel.Invocable;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Xml.Serialization;
 using ZoaIds.Server.Data;
@@ -114,7 +113,7 @@ public class FetchAndStoreMetars : IInvocable
 			{
 				var obs = new SkyCoverObservation
 				{
-					Type = (CloudCoverType)Enum.Parse(typeof(CloudCoverType), cover.sky_cover),
+					Coverage = (SkyCoverage)Enum.Parse(typeof(SkyCoverage), cover.sky_cover),
 					BaseFtAgl = cover.cloud_base_ft_aglSpecified ? cover.cloud_base_ft_agl : null
 				};
                 newMetar.SkyCovers.Add(obs);
