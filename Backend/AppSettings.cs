@@ -1,0 +1,43 @@
+﻿namespace ZoaIdsBackend;
+
+public class AppSettings
+{
+    public const string SectionKeyName = "AppSettings";
+    public int VatsimDataKeepForfHours { get; set; } = 24;
+    public int VatsimDatafeedRefreshSeconds { get; set; } = 15;
+    public int DigitalAtisRefreshSeoncds { get; set; } = 60;
+    public int RvrRefreshSeconds { get; set; } = 120;
+    public CacheTtlSettings CacheTtls { get; set; } = new();
+    public UrlsSettings Urls { get; set; } = new();
+    public ArtccAirportsSettings ArtccAirports { get; set; } = new();
+
+
+    public class CacheTtlSettings
+    {
+        public int FlightAwareRoutes { get; set; } = 1200;
+        public int Charts { get; set; } = 3600;
+    }
+    
+    public class UrlsSettings
+    {
+        public string AirlinesCsv { get; set; } = string.Empty;
+        public string AircraftCsv { get; set; } = string.Empty;
+        public string ChartsApiEndpoint { get; set; } = string.Empty;
+        public string ClowdDatisApiEndpoint { get; set; } = string.Empty;
+        public string NasrApiEndpoint { get; set; } = string.Empty;
+        public string FlightAwareIfrRouteBase { get; set; } = string.Empty;
+        public string VatsimDatafeed { get; set; } = string.Empty;
+        public string MetarsXml { get; set; } = string.Empty;
+        public string FaaRvrBase { get; set; } = string.Empty;
+        public string FaaRvrAirportLookup { get; set; } = string.Empty;
+    }
+
+    public class ArtccAirportsSettings
+    {
+        public ICollection<string> Bravos { get; set; } = new List<string>();
+        public ICollection<string> Charlies { get; set; } = new List<string>();
+        public ICollection<string> Deltas { get; set; } = new List<string>();
+        public ICollection<string> Other { get; set; } = new List<string>();
+        public ICollection<string> All => Bravos.Concat(Charlies).Concat(Deltas).ToList();
+    }
+}
