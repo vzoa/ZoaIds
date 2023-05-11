@@ -54,12 +54,24 @@ public class GetAircraftInfoByType : Endpoint<SingleAircraftRequest, SingleAircr
     public override async Task HandleAsync(SingleAircraftRequest request, CancellationToken c)
     {
         using var db = await _contextFactory.CreateDbContextAsync(c);
-        var aircraft = db.AircraftTypes.Where(a => a.IcaoId == request.IcaoTypeDesignator.ToUpper());
-        var first = await aircraft.FirstOrDefaultAsync(c);
-
-        if (first is null)
+        var response = await MakeAircraftResponseAsync(request.IcaoTypeDesignator, db, c);
+        if (response is null)
         {
             await SendNotFoundAsync();
+        }
+        else
+        {
+            await SendAsync(response);
+        }
+    }
+
+    internal static async Task<SingleAircraftResponse?> MakeAircraftResponseAsync(string id, ZoaIdsContext db, CancellationToken c = default)
+    {
+        var aircraft = db.AircraftTypes.Where(a => a.IcaoId == id.ToUpper());
+        var first = await aircraft.FirstOrDefaultAsync(c);
+        if (first is null)
+        {
+            return null;
         }
         else
         {
@@ -77,7 +89,7 @@ public class GetAircraftInfoByType : Endpoint<SingleAircraftRequest, SingleAircr
                 LandAndHoldShortGroup = first.LandAndHoldShortGroup,
                 Models = aircraftList.Select(a => new AircraftModelResponse(a.Manufacturer, a.Model)).ToList(),
             };
-            await SendAsync(response);
+            return response;
         }
     }
 }
