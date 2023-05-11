@@ -34,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\AircraftTypes\Endpoints\" />
     <Folder Include="Modules\NasrData\Services\" />
     <Folder Include="Modules\Weather\Services\" />
   </ItemGroup>
