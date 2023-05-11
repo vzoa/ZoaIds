@@ -5,7 +5,7 @@ using ZoaIdsBackend.Modules.DigitalAtis.Models;
 
 namespace ZoaIdsBackend.Modules.DigitalAtis.Endpoints;
 
-public class GetAllDigitalAtis : EndpointWithoutRequest<ICollection<Atis>>
+public class GetAllDigitalAtis : EndpointWithoutRequest<IEnumerable<Atis>>
 {
     private readonly IDbContextFactory<ZoaIdsContext> _contextFactory;
 
@@ -24,7 +24,8 @@ public class GetAllDigitalAtis : EndpointWithoutRequest<ICollection<Atis>>
     public override async Task HandleAsync(CancellationToken c)
     {
         using var db = await _contextFactory.CreateDbContextAsync(c);
-        var list = await db.Atises.AsNoTracking().ToListAsync(c) ?? new List<Atis>();
-        await SendAsync(list);
+        var all = db.Atises.AsNoTracking();
+        var response = all.Any() ? all : Enumerable.Empty<Atis>();
+        await SendAsync(response);
     }
 }

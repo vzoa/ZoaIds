@@ -11,7 +11,7 @@ public class DigitalAtisRequest
 }
 
 
-public class GetDigitalAtisById : Endpoint<DigitalAtisRequest, ICollection<Atis>>
+public class GetDigitalAtisById : Endpoint<DigitalAtisRequest, IEnumerable<Atis>>
 {
     private readonly IDbContextFactory<ZoaIdsContext> _contextFactory;
 
@@ -30,14 +30,15 @@ public class GetDigitalAtisById : Endpoint<DigitalAtisRequest, ICollection<Atis>
     public override async Task HandleAsync(DigitalAtisRequest request, CancellationToken c)
     {
         using var db = await _contextFactory.CreateDbContextAsync(c);
-        var atises = await db.Atises.Where(a => a.IcaoId == request.IcaoId.ToUpper()).ToListAsync(c);
-        if (atises is null)
+        var atises = db.Atises.Where(a => a.IcaoId == request.IcaoId.ToUpper());
+        
+        if (atises.Any())
         {
-            await SendNotFoundAsync();
+            await SendAsync(atises);
         }
         else
         {
-            await SendOkAsync(atises);
+            await SendNotFoundAsync();
         }
     }
 }

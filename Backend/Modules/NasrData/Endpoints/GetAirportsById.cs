@@ -21,7 +21,7 @@ public class AirportsRequestValidator : Validator<MultipleAirportsRequest>
     }
 }
 
-public class GetAirportsById : Endpoint<MultipleAirportsRequest, ICollection<Airport>>
+public class GetAirportsById : Endpoint<MultipleAirportsRequest, IEnumerable<Airport>>
 {
     private readonly IDbContextFactory<ZoaIdsContext> _contextFactory;
 
@@ -46,9 +46,9 @@ public class GetAirportsById : Endpoint<MultipleAirportsRequest, ICollection<Air
         var faaAirports = db.Airports.AsNoTracking().Where(a => faaUppercase.Contains(a.FaaId));
         var icaoAirports = db.Airports.AsNoTracking().Where(a => icaoUppercase.Contains(a.IcaoId));
 
-        var returnAirports = Enumerable.Concat(faaAirports, icaoAirports).ToList();
+        var returnAirports = Enumerable.Concat(faaAirports, icaoAirports);
 
-        if (returnAirports.Count > 0)
+        if (returnAirports.Any())
         {
             await SendAsync(returnAirports);
         }

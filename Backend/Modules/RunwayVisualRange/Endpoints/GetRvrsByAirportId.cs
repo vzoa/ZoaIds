@@ -10,7 +10,7 @@ public class AirportRvrRequest
     public string FaaId { get; set; } = string.Empty;
 }
 
-public class GetRvrsByAirportId : Endpoint<AirportRvrRequest, ICollection<RvrObservation>>
+public class GetRvrsByAirportId : Endpoint<AirportRvrRequest, IEnumerable<RvrObservation>>
 {
     private readonly IDbContextFactory<ZoaIdsContext> _contextFactory;
 
@@ -29,15 +29,15 @@ public class GetRvrsByAirportId : Endpoint<AirportRvrRequest, ICollection<RvrObs
     public override async Task HandleAsync(AirportRvrRequest request, CancellationToken c)
     {
         using var db = await _contextFactory.CreateDbContextAsync(c);
-        var rvr = await db.RvrObservations.AsNoTracking().Where(r => r.AirportFaaId == request.FaaId.ToUpper()).ToListAsync();
+        var rvr = db.RvrObservations.AsNoTracking().Where(r => r.AirportFaaId == request.FaaId.ToUpper());
 
-        if (rvr is null || rvr.Count == 0)
+        if (rvr.Any())
         {
-            await SendNotFoundAsync();
+            await SendAsync(rvr);
         }
         else
         {
-            await SendAsync(rvr);
+            await SendNotFoundAsync();
         }
     }
 }
