@@ -205,6 +205,9 @@ public class VatsimJsonPilot : IVatsimPilotActivity
     [JsonPropertyName("pilot_rating")]
     public int? PilotRating { get; set; }
 
+    [JsonPropertyName("military_rating")]
+    public int? MilitaryRating { get; set; }
+
     [JsonPropertyName("latitude")]
     public double? Latitude { get; set; }
 
