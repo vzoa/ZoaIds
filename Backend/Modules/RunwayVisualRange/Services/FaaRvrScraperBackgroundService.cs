@@ -21,59 +21,49 @@ public partial class FaaRvrScraperBackgroundService : BackgroundService
         _httpClientFactory = httpClientFactory;
         _appSettings = appSettings;
     }
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            // Open FAA RVR airport lookup page
+            var httpClient = _httpClientFactory.CreateClient();
+            using var stream = await httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.FaaRvrAirportLookup, stoppingToken);
+            var parser = new HtmlParser();
+            using var document = await parser.ParseDocumentAsync(stream);
+
+            // Find all the links for airports and filter only those we care about in ZOA
+            var airports = _appSettings.CurrentValue.ArtccAirports.All.Select(a => (a.StartsWith("K") && a.Length == 4) ? a[1..] : a);
+            var linkElements = document.QuerySelectorAll("tr > td > a");
+            var foundLinks = linkElements
+                .Where(e => airports.Contains(e.TextContent, StringComparer.OrdinalIgnoreCase))
+                .Select(e => (Id: e.TextContent, Url: e.GetAttribute("href")));
+
+            // For each found link, open and parse RVR
+            var parsedAirports = await Task.WhenAll(foundLinks.Select(e => FetchRvrObservationAsync(e.Id, e.Url, stoppingToken, httpClient)));
+
+            // Get the results and store in DB
+            var db = await _contextFactory.CreateDbContextAsync(stoppingToken);
+            foreach (var (Id, Rvrs) in parsedAirports)
             {
-                // Open FAA RVR airport lookup page
-                var httpClient = _httpClientFactory.CreateClient();
-                using var stream = await httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.FaaRvrAirportLookup, stoppingToken);
-                var parser = new HtmlParser();
-                using var document = await parser.ParseDocumentAsync(stream);
-
-                // Find all the links for airports and filter only those we care about in ZOA
-                var airports = _appSettings.CurrentValue.ArtccAirports.All.Select(a => (a.StartsWith("K") && a.Length == 4) ? a[1..] : a);
-                var linkElements = document.QuerySelectorAll("tr > td > a");
-                var foundLinks = linkElements
-                    .Where(e => airports.Contains(e.TextContent, StringComparer.OrdinalIgnoreCase))
-                    .Select(e => (Id: e.TextContent, Url: e.GetAttribute("href")));
-
-                // For each found link, open and parse RVR
-                var tasks = new List<Task>();
-                foreach (var (id, url) in foundLinks)
+                // Delete all existing RVR observations for this airport
+                var numDeleted = await db.RvrObservations.Where(r => r.AirportFaaId == Id).ExecuteDeleteAsync(stoppingToken);
+                if (numDeleted > 0)
                 {
-                    var t = FetchRvrObservationAsync(id, url, stoppingToken, httpClient);
-                    tasks.Add(t);
+                    _logger.LogInformation("Deleted {numDeleted} RVR observations for {id}", numDeleted, Id);
                 }
-                await Task.WhenAll(tasks);
 
-                // Get the results from all of the completed tasks and store in DB
-                var db = await _contextFactory.CreateDbContextAsync(stoppingToken);
-                foreach (var task in tasks)
-                {
-                    var (id, list) = ((Task<(string, List<RvrObservation>)>)task).Result;
-
-                    // Delete all existing RVR observations for this airport
-                    var numDeleted = await db.RvrObservations.Where(r => r.AirportFaaId == id).ExecuteDeleteAsync(stoppingToken);
-                    if (numDeleted > 0)
-                    {
-                        _logger.LogInformation("Deleted {numDeleted} RVR observations for {id}", numDeleted, id);
-                    }
-
-                    // Add all the new observations
-                    await db.RvrObservations.AddRangeAsync(list, stoppingToken);
-                    await db.SaveChangesAsync(stoppingToken);
-                    _logger.LogInformation("Added {num} RVR observations for {id}", list.Count, id);
-                }
+                // Add all the new observations
+                await db.RvrObservations.AddRangeAsync(Rvrs, stoppingToken);
+                await db.SaveChangesAsync(stoppingToken);
+                _logger.LogInformation("Added {num} RVR observations for {id}", Rvrs.Count, Id);
             }
 
             await Task.Delay(1000 * _appSettings.CurrentValue.RvrRefreshSeconds, stoppingToken);
         }
     }
 
-    private async Task<(string, List<RvrObservation>)> FetchRvrObservationAsync(string airportFaaId, string url, CancellationToken stoppingToken, HttpClient? httpClient = null)
+    private async Task<(string Id, List<RvrObservation> Rvrs)> FetchRvrObservationAsync(string airportFaaId, string url, CancellationToken stoppingToken, HttpClient? httpClient = null)
     {
         httpClient ??= _httpClientFactory.CreateClient();
         using var stream = await httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.FaaRvrBase + url, stoppingToken);
@@ -103,7 +93,7 @@ public partial class FaaRvrScraperBackgroundService : BackgroundService
             };
             returnList.Add(newObs);
         }
-        return (airportFaaId, returnList);
+        return (Id: airportFaaId, Rvrs: returnList);
     }
 
     private static int? ParseDistance(string text)

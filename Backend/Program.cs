@@ -1,7 +1,7 @@
-
 using Coravel;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using ZoaIdsBackend.Common;
 using ZoaIdsBackend.Data;
 
@@ -58,6 +58,8 @@ public class Program
         builder.Services.AddScheduler();
 
 
+        builder.Services.AddCors();
+
 
         var app = builder.Build();
 
@@ -81,12 +83,18 @@ public class Program
         app.UseAuthorization();
 
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseCors(b => b.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+        }
+
         app.UseDefaultExceptionHandler();
         app.UseFastEndpoints(c =>
         {
             c.Endpoints.RoutePrefix = "api";
             c.Versioning.Prefix = "v";
             c.Versioning.PrependToRoute = true;
+            c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
         });
 
 

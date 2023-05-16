@@ -20,7 +20,7 @@ public class SingleAircraftResponse
     public string ConslidatedWakeTurbulenceCategory { get; set; } = string.Empty;
     public string SameRunwaySeparationCategory { get; set; } = string.Empty;
     public string LandAndHoldShortGroup { get; set; } = string.Empty;
-    public ICollection<AircraftModelResponse> Models { get; set; } = new List<AircraftModelResponse>();
+    public IEnumerable<AircraftModelResponse> Models { get; set; } = Enumerable.Empty<AircraftModelResponse>();
 }
 
 public class AircraftModelResponse
@@ -76,7 +76,7 @@ public class GetAircraftInfoByType : Endpoint<SingleAircraftRequest, SingleAircr
         else
         {
             var aircraftList = await aircraft.ToListAsync(c);
-            var response = new SingleAircraftResponse
+            return new SingleAircraftResponse
             {
                 TypeDesignator = first.IcaoId,
                 Class = first.Class,
@@ -87,9 +87,8 @@ public class GetAircraftInfoByType : Endpoint<SingleAircraftRequest, SingleAircr
                 ConslidatedWakeTurbulenceCategory = first.ConslidatedWakeTurbulenceCategory,
                 SameRunwaySeparationCategory = first.SameRunwaySeparationCategory,
                 LandAndHoldShortGroup = first.LandAndHoldShortGroup,
-                Models = aircraftList.Select(a => new AircraftModelResponse(a.Manufacturer, a.Model)).ToList(),
+                Models = aircraftList.Select(a => new AircraftModelResponse(a.Manufacturer, a.Model)),
             };
-            return response;
         }
     }
 }

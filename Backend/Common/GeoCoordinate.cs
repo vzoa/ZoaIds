@@ -1,4 +1,7 @@
-﻿namespace ZoaIdsBackend.Common;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace ZoaIdsBackend.Common;
 
 public class GeoCoordinate
 {
@@ -50,5 +53,34 @@ public class GeoCoordinate
         StatuteMile,
         NauticalMile,
         Feet
+    }
+}
+
+public class GeoCoordinateJsonConverter : JsonConverter<GeoCoordinate>
+{
+    public override GeoCoordinate? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartArray) { throw new JsonException("Expected StartArray token"); }
+
+        reader.Read();
+        if (reader.TokenType != JsonTokenType.Number) { throw new JsonException("Longitude must be a number"); }
+        var lng = reader.GetDouble();
+
+        reader.Read();
+        if (reader.TokenType != JsonTokenType.Number) { throw new JsonException("Latitude nust be a number"); }
+        var lat = reader.GetDouble();
+
+        reader.Read();
+        if (reader.TokenType != JsonTokenType.EndArray) { throw new JsonException("Expected EndArray token"); }
+
+        return new GeoCoordinate(lat, lng);
+    }
+
+    public override void Write(Utf8JsonWriter writer, GeoCoordinate value, JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        writer.WriteNumberValue(value.Longitude);
+        writer.WriteNumberValue(value.Latitude);
+        writer.WriteEndArray();
     }
 }

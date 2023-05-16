@@ -17,7 +17,7 @@ public class AppSettings
         public int FlightAwareRoutes { get; set; } = 1200;
         public int Charts { get; set; } = 3600;
     }
-    
+
     public class UrlsSettings
     {
         public string AirlinesCsv { get; set; } = string.Empty;
@@ -30,6 +30,7 @@ public class AppSettings
         public string MetarsXml { get; set; } = string.Empty;
         public string FaaRvrBase { get; set; } = string.Empty;
         public string FaaRvrAirportLookup { get; set; } = string.Empty;
+        public string ArtccBoundariesGeoJson { get; set; } = string.Empty;
     }
 
     public class ArtccAirportsSettings

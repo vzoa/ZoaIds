@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ZoaIdsBackend.Data;
 using ZoaIdsBackend.Modules.RunwayVisualRange.Models;
 
-namespace ZoaIdsBackend.Modules.VatsimData.Endpoints;
+namespace ZoaIdsBackend.Modules.RunwayVisualRange.Endpoints;
 
 public class AirportRvrRequest
 {

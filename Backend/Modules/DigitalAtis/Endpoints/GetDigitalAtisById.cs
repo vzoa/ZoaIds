@@ -31,7 +31,7 @@ public class GetDigitalAtisById : Endpoint<DigitalAtisRequest, IEnumerable<Atis>
     {
         using var db = await _contextFactory.CreateDbContextAsync(c);
         var atises = db.Atises.Where(a => a.IcaoId == request.IcaoId.ToUpper());
-        
+
         if (atises.Any())
         {
             await SendAsync(atises);

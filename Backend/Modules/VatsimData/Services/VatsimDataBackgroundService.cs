@@ -38,9 +38,10 @@ public class VatsimDataBackgroundService : BackgroundService
             if (!firstLoop)
             {
                 // Stop the stopwatch and use elapsed loop time to adjust delay time so that
-                // loop-start to loop-start time is consistent
+                // loop-start to loop-start time is consistent. Delay must be > 0
                 _stopwatch.Stop();
                 var adjustedDelay = TimeSpan.FromSeconds(_delaySeconds) - _stopwatch.Elapsed;
+                adjustedDelay = TimeSpan.Zero > adjustedDelay ? TimeSpan.Zero : adjustedDelay;
                 _logger.LogInformation("Pausing VATSIM Data Worker for {delay} seconds", adjustedDelay.TotalSeconds.ToString());
                 await Task.Delay(adjustedDelay, stoppingToken);
             }

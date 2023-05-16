@@ -1,8 +1,18 @@
-import type { Component } from 'solid-js';
+import { createResource, type Component } from 'solid-js';
+import { NavBar } from './components/NavBar';
+
+const fetchData = async () => (await fetch("https://localhost:7160/api/v1/routes/klax/ksfo")).json();
+
 
 const App: Component = () => {
+  
+  const [data] = createResource(fetchData);
+  
+  
   return (
-    <p class="text-4xl text-green-700 text-center py-20">Hello tailwind!</p>
+    <span>
+      {JSON.stringify(data(), null, 2)}
+    </span>
   );
 };
 

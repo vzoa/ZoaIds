@@ -22,6 +22,9 @@ public class ZoaIdsContext : DbContext
     public DbSet<RvrObservation> RvrObservations { get; set; }
 
 
+    public DbSet<Artcc> Artccs { get; set; }
+
+
     //public DbSet<AirportPairRouteSummary> RealWorldRoutings { get; set; }
 
 
@@ -99,5 +102,7 @@ public class ZoaIdsContext : DbContext
 
         modelBuilder.Entity<RvrObservation>().Property<int>("Id");
         modelBuilder.Entity<RvrObservation>().HasKey("Id");
+
+        modelBuilder.Entity<Artcc>().HasKey(a => a.Guid);
     }
 }

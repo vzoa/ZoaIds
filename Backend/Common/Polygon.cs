@@ -1,4 +1,7 @@
-﻿namespace ZoaIdsBackend.Common;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace ZoaIdsBackend.Common;
 
 // Adapted from Jim Speaker, https://stackoverflow.com/questions/46144205/point-in-polygon-using-winding-number
 
@@ -9,11 +12,17 @@ public interface IPolygon
 
 public class Polygon : IPolygon
 {
+    public List<GeoCoordinate> Points => _points;
     private readonly List<GeoCoordinate> _points;
 
     public Polygon(List<GeoCoordinate> points)
     {
         _points = points;
+    }
+
+    public Polygon(IEnumerable<GeoCoordinate> points)
+    {
+        _points = points.ToList();
     }
 
     public bool Contains(GeoCoordinate location)
@@ -114,5 +123,36 @@ public class Polygon : IPolygon
     {
         Ascending,
         Descending
+    }
+}
+
+public class PolygonJsonConverter : JsonConverter<Polygon>
+{
+    public override Polygon? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartArray)
+        {
+            throw new JsonException();
+        }
+        reader.Read();
+
+        var coords = new List<GeoCoordinate>();
+        while (reader.TokenType != JsonTokenType.EndArray)
+        {
+            coords.Add(JsonSerializer.Deserialize<GeoCoordinate>(ref reader, options)!);
+            reader.Read();
+        }
+
+        return new Polygon(coords);
+    }
+
+    public override void Write(Utf8JsonWriter writer, Polygon value, JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        foreach (var coord in value.Points)
+        {
+            JsonSerializer.Serialize(writer, coord, options);
+        }
+        writer.WriteEndArray();
     }
 }
