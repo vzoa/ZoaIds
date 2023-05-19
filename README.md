@@ -1,3 +1,3 @@
 # ZoaIds
  
-The beginnings of a C# and Blazor WASM IDS for vZOA
+The beginnings of a C# backend / [Solid](https://www.solidjs.com/) frontned IDS for vZOA.
