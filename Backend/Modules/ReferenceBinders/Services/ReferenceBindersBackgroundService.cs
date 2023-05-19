@@ -47,14 +47,14 @@ public class ReferenceBindersBackgroundService : BackgroundService
         }
 
         var dir = new DirectoryInfo(currentPath);
-        var binder = new Binder(MakeRelativePath(currentPath, rootPath));
+        var binder = new Binder(Uri.UnescapeDataString(MakeRelativePath(currentPath, rootPath)));
         foreach(var childDir in dir.EnumerateDirectories())
         {
             binder.Children.Add(CreateBinder(childDir.FullName, rootPath));
         }
         foreach (var childFile in dir.EnumerateFiles("*.md"))
         {
-            var relativePath = MakeRelativePath(childFile.FullName, rootPath);
+            var relativePath = Uri.UnescapeDataString(MakeRelativePath(childFile.FullName, rootPath));
             binder.Children.Add(new Document(relativePath, MakeUrl(relativePath)));
         }       
         return binder;
@@ -69,6 +69,6 @@ public class ReferenceBindersBackgroundService : BackgroundService
 
     private string MakeUrl(string relativePath)
     {
-        return new Uri(new Uri(_appSettings.CurrentValue.Urls.AppBase), $"{ReferenceBindersModule.StaticPath}/{relativePath}").ToString();
+        return new Uri(new Uri(_appSettings.CurrentValue.Urls.AppBase), $"{ReferenceBindersModule.StaticPath}/{relativePath}").AbsoluteUri;
     }
 }
