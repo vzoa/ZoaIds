@@ -1,9 +1,11 @@
 using Coravel;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using System.Text.Json.Serialization;
 using ZoaIdsBackend.Common;
 using ZoaIdsBackend.Data;
+using ZoaIdsBackend.Modules.ReferenceBinders.Models;
 
 namespace ZoaIdsBackend;
 
@@ -76,6 +78,15 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(builder.Environment.WebRootPath, "Binders")),
+                RequestPath = "/binders/static"
+        });
+
 
         // Response caching
         app.UseResponseCaching();

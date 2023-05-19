@@ -38,6 +38,7 @@ public class GetPilotsWithinArtcc : Endpoint<ArtccPilotsRequest, IEnumerable<Vat
 
     public override async Task HandleAsync(ArtccPilotsRequest request, CancellationToken c)
     {
+        // Get requested ARTCC from DB
         using var db = await _contextFactory.CreateDbContextAsync(c);
         var artccs = db.Artccs.Where(a => a.Id == request.Id.ToUpper());
         if (!artccs.Any())

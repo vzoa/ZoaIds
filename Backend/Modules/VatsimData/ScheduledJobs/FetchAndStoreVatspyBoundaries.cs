@@ -31,19 +31,6 @@ public class FetchAndStoreVatspyBoundaries : IInvocable
 
     public async Task Invoke()
     {
-        //TODO ADD TRY CATCH and logging
-
-        // Setup reads and DB context
-        //try
-        //{
-
-        //}
-        //catch (Exception ex)
-        //{
-        //	_logger.LogError("Error while trying to fetch and read Aircraft ICAO csv: {ex}", ex.ToString());
-        //	return;
-        //}
-
         // Fetch VatSpy Boundaries GeoJSON file
         var url = _appSettings.CurrentValue.Urls.ArtccBoundariesGeoJson;
         using var responseStream = await _httpClient.GetStreamAsync(url);
@@ -57,10 +44,6 @@ public class FetchAndStoreVatspyBoundaries : IInvocable
             var options = new JsonSerializerOptions { NumberHandling = JsonNumberHandling.AllowReadingFromString };
             var featureCollection = JsonSerializer.Deserialize<VatspyBoundariesGeoJson.Root>(responseStream, options);
             parsedArtccs = featureCollection.Features.Select(NewArtccFromFeature);
-
-
-            var oceanic = parsedArtccs.Where(a => a.IsOceanic).ToList();
-
         }
         catch (Exception ex)
         {

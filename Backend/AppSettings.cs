@@ -7,9 +7,11 @@ public class AppSettings
     public int VatsimDatafeedRefreshSeconds { get; set; } = 15;
     public int DigitalAtisRefreshSeoncds { get; set; } = 60;
     public int RvrRefreshSeconds { get; set; } = 120;
+    public int BindersRefreshSeconds { get; set; } = 60;
     public CacheTtlSettings CacheTtls { get; set; } = new();
     public UrlsSettings Urls { get; set; } = new();
     public ArtccAirportsSettings ArtccAirports { get; set; } = new();
+    public string ReferenceBindersRootDirectory { get; set; } = string.Empty;
 
 
     public class CacheTtlSettings
