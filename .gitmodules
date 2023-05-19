@@ -1,0 +1,3 @@
+[submodule "Backend/wwwroot/Binders"]
+	path = Backend/wwwroot/Binders
+	url = https://github.com/vzoa/Binders.git
