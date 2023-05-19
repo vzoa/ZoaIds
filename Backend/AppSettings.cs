@@ -11,7 +11,7 @@ public class AppSettings
     public CacheTtlSettings CacheTtls { get; set; } = new();
     public UrlsSettings Urls { get; set; } = new();
     public ArtccAirportsSettings ArtccAirports { get; set; } = new();
-    public string ReferenceBindersRootDirectory { get; set; } = string.Empty;
+    public string ReferenceBindersDirectoryInWwwroot { get; set; } = string.Empty;
 
 
     public class CacheTtlSettings
@@ -22,6 +22,7 @@ public class AppSettings
 
     public class UrlsSettings
     {
+        public string AppBase { get; set; } = string.Empty;
         public string AirlinesCsv { get; set; } = string.Empty;
         public string AircraftCsv { get; set; } = string.Empty;
         public string ChartsApiEndpoint { get; set; } = string.Empty;

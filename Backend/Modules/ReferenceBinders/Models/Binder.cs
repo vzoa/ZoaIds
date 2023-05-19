@@ -22,15 +22,17 @@ public class Binder : INode
 public class Document : INode
 {
     public string Path { get; set; }
+    public string Url { get; set; }
 
-    public Document(string path)
+    public Document(string path, string url)
     {
         Path = path;
+        Url = url;
     }
 }
 
 public class BinderConverter : JsonConverter<Binder>
-{
+{   
     public override Binder? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotImplementedException();
@@ -79,8 +81,9 @@ public class DocumentConverter: JsonConverter<Document>
         var split = value.Path.Split(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
 
         writer.WriteStartObject();
-        writer.WriteString("name", split[^1]);
+        writer.WriteString("name", split[^1].Replace(".md", "", StringComparison.OrdinalIgnoreCase));
         writer.WriteString("path", value.Path);
+        writer.WriteString("url", value.Url);
         writer.WriteString("type", "document");
         writer.WriteEndObject();
     }

@@ -37,7 +37,7 @@
   <ItemGroup>
     <Folder Include="Modules\NasrData\Services\" />
     <Folder Include="Modules\Weather\Services\" />
-    <Folder Include="wwwroot\" />
+	<Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

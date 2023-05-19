@@ -8,13 +8,15 @@ public class ReferenceBindersBackgroundService : BackgroundService
 {
     private readonly ILogger<ReferenceBindersBackgroundService> _logger;
     private readonly IOptionsMonitor<AppSettings> _appSettings;
+    private readonly IWebHostEnvironment _environment;
     private readonly IMemoryCache _cache;
     public const string CacheKey = "ReferenceBinderStructure";
 
-    public ReferenceBindersBackgroundService(ILogger<ReferenceBindersBackgroundService> logger, IOptionsMonitor<AppSettings> appSettings, IMemoryCache cache)
+    public ReferenceBindersBackgroundService(ILogger<ReferenceBindersBackgroundService> logger, IOptionsMonitor<AppSettings> appSettings, IWebHostEnvironment environment, IMemoryCache cache)
     {
         _logger = logger;
         _appSettings = appSettings;
+        _environment = environment;
         _cache = cache;
     }
 
@@ -24,8 +26,9 @@ public class ReferenceBindersBackgroundService : BackgroundService
         {
             try
             {
-                _logger.LogInformation("Scanning reference binders directory: {path}", _appSettings.CurrentValue.ReferenceBindersRootDirectory);
-                var fetchedBinder = CreateBinder(_appSettings.CurrentValue.ReferenceBindersRootDirectory);
+                var path = Path.Combine(_environment.WebRootPath, _appSettings.CurrentValue.ReferenceBindersDirectoryInWwwroot);
+                _logger.LogInformation("Scanning reference binders directory: {path}", path);
+                var fetchedBinder = CreateBinder(path);
                 _cache.Set(CacheKey, fetchedBinder);
             }
             catch (Exception ex)
@@ -37,21 +40,22 @@ public class ReferenceBindersBackgroundService : BackgroundService
         }
     }
 
-    private static Binder CreateBinder(string fullPath, string parentPath = "")
+    private Binder CreateBinder(string currentPath, string rootPath = "")
     {
-        if (string.IsNullOrEmpty(parentPath)) {
-            parentPath = fullPath;
+        if (string.IsNullOrEmpty(rootPath)) {
+            rootPath = currentPath;
         }
 
-        var dir = new DirectoryInfo(fullPath);
-        var binder = new Binder(MakeRelativePath(fullPath, parentPath));
+        var dir = new DirectoryInfo(currentPath);
+        var binder = new Binder(MakeRelativePath(currentPath, rootPath));
         foreach(var childDir in dir.EnumerateDirectories())
         {
-            binder.Children.Add(CreateBinder(childDir.FullName, dir.FullName));
+            binder.Children.Add(CreateBinder(childDir.FullName, rootPath));
         }
-        foreach (var childFile in dir.EnumerateFiles())
+        foreach (var childFile in dir.EnumerateFiles("*.md"))
         {
-            binder.Children.Add(new Document(MakeRelativePath(childFile.FullName, dir.FullName)));
+            var relativePath = MakeRelativePath(childFile.FullName, rootPath);
+            binder.Children.Add(new Document(relativePath, MakeUrl(relativePath)));
         }       
         return binder;
     }
@@ -61,5 +65,10 @@ public class ReferenceBindersBackgroundService : BackgroundService
         var fullUri = new Uri(fullPath, UriKind.Absolute);
         var baseUri = new Uri(basePath, UriKind.Absolute);
         return baseUri.MakeRelativeUri(fullUri).ToString();
+    }
+
+    private string MakeUrl(string relativePath)
+    {
+        return new Uri(new Uri(_appSettings.CurrentValue.Urls.AppBase), $"{ReferenceBindersModule.StaticPath}/{relativePath}").ToString();
     }
 }

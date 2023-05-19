@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using System.Text.Json.Serialization;
 using ZoaIdsBackend.Common;
 using ZoaIdsBackend.Data;
+using ZoaIdsBackend.Modules.ReferenceBinders;
 using ZoaIdsBackend.Modules.ReferenceBinders.Models;
 
 namespace ZoaIdsBackend;
@@ -84,7 +85,7 @@ public class Program
         {
             FileProvider = new PhysicalFileProvider(
                 Path.Combine(builder.Environment.WebRootPath, "Binders")),
-                RequestPath = "/binders/static"
+                RequestPath = ReferenceBindersModule.StaticPath
         });
 
 
