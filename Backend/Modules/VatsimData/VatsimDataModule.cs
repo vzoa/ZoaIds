@@ -13,6 +13,7 @@ public class VatsimDataModule : IServiceConfigurator, ISchedulerConfigurator
     public IServiceCollection AddServices(IServiceCollection services)
     {
         services.AddTransient<FetchAndStoreVatspyBoundaries>();
+        services.AddTransient<DeleteOldVatsimSnapshots>();
         services.AddSingleton<VatsimDataRepositoryFactory>();
         services.AddHostedService<VatsimDataBackgroundService>();
         services.AddScoped<IVatsimDataRepository, CachedVatsimDataRepository>();
@@ -26,6 +27,11 @@ public class VatsimDataModule : IServiceConfigurator, ISchedulerConfigurator
         {
             scheduler.Schedule<FetchAndStoreVatspyBoundaries>()
                 .DailyAt(9, rnd.Next(60))
+                .RunOnceAtStart();
+
+            scheduler
+                .Schedule<DeleteOldVatsimSnapshots>()
+                .Hourly()
                 .RunOnceAtStart();
         };
     }

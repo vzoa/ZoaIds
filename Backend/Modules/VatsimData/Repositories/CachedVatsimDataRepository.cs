@@ -58,4 +58,16 @@ public class CachedVatsimDataRepository : IVatsimDataRepository
         _cache.Set(LatestSnaphotKey, snapshot);
         return n;
     }
+
+    public async Task<int> DeleteAllSnapshotsBefore(DateTime cutoff, CancellationToken c = default)
+    {
+        using var db = await _contextFactory.CreateDbContextAsync(c);
+        var numDeleted = await db.VatsimSnapshots.Where(s => s.Time < cutoff).ExecuteDeleteAsync(c);
+        if (!db.VatsimSnapshots.Any())
+        {
+            _cache.Remove(LatestSnaphotKey);
+        }
+
+        return numDeleted;
+    }
 }
