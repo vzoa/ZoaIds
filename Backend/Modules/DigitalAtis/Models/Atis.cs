@@ -12,41 +12,49 @@ public class Atis
     public string WeatherText { get; set; }
     public string UniqueId { get; private set; }
 
-    public static Atis ParseFromClowdAtis(ClowdDatisDto clowdAtis)
+    public static bool TryParseFromClowdAtis(ClowdDatisDto clowdAtis, out Atis? newAtis)
     {
-        var newAtis = new Atis()
-        {
-            IcaoId = clowdAtis.Airport,
-            Type = ParseAtisType(clowdAtis.Type),
-            RawText = clowdAtis.Datis
-        };
-        newAtis.UniqueId = newAtis.IcaoId + newAtis.Type;
+        newAtis = null;
 
-        // Parse letter and time from first sentence and add to new Atis
-        var letterTimePattern = @"INFO ([A-Z]) ([0-9]{2})([0-9]{2})Z";
-        var matches = Regex.Match(clowdAtis.Datis, letterTimePattern);
-        if (matches.Success)
+        try
         {
-            newAtis.InfoLetter = char.Parse(matches.Groups[1].Value);
-            newAtis.IssueTime = new DateTime(
-                DateTime.UtcNow.Year,
-                DateTime.UtcNow.Month,
-                DateTime.UtcNow.Day,
-                int.Parse(matches.Groups[2].Value), // Hours
-                int.Parse(matches.Groups[3].Value), // Minutes
-                0,
-                DateTimeKind.Utc
-            );
-            if (newAtis.IssueTime > DateTime.UtcNow)
+            newAtis = new Atis()
             {
-                newAtis.IssueTime -= TimeSpan.FromDays(1);
+                IcaoId = clowdAtis.Airport,
+                Type = ParseAtisType(clowdAtis.Type),
+                RawText = clowdAtis.Datis
+            };
+            newAtis.UniqueId = newAtis.IcaoId + newAtis.Type;
+
+            // Parse letter and time from first sentence and add to new Atis
+            var letterTimePattern = @"INFO ([A-Z]) ([0-9]{2})([0-9]{2})Z";
+            var matches = Regex.Match(clowdAtis.Datis, letterTimePattern);
+            if (matches.Success)
+            {
+                newAtis.InfoLetter = char.Parse(matches.Groups[1].Value);
+                newAtis.IssueTime = new DateTime(
+                    DateTime.UtcNow.Year,
+                    DateTime.UtcNow.Month,
+                    DateTime.UtcNow.Day,
+                    int.Parse(matches.Groups[2].Value), // Hours
+                    int.Parse(matches.Groups[3].Value), // Minutes
+                    0,
+                    DateTimeKind.Utc
+                );
+                if (newAtis.IssueTime > DateTime.UtcNow)
+                {
+                    newAtis.IssueTime -= TimeSpan.FromDays(1);
+                }
             }
+
+            // Take 2nd sentence as WX string (by convention)
+            newAtis.WeatherText = clowdAtis.Datis.Split(". ")[1];
+            return true;
         }
-
-        // Take 2nd sentence as WX string (by convention)
-        newAtis.WeatherText = clowdAtis.Datis.Split(". ")[1];
-
-        return newAtis;
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     private static AtisType ParseAtisType(string type)
@@ -55,7 +63,8 @@ public class Atis
         {
             "combined" => AtisType.Combined,
             "dep" => AtisType.Departure,
-            "arr" => AtisType.Arrival
+            "arr" => AtisType.Arrival,
+            _ => throw new NotImplementedException()
         };
     }
 

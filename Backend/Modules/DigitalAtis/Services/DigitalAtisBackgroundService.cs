@@ -68,10 +68,9 @@ public class DigitalAtisBackgroundService : BackgroundService
             var newAtisDict = new Dictionary<string, Atis>();
             foreach (var atis in apiAtisList)
             {
-                try
+                if (Atis.TryParseFromClowdAtis(atis, out var fetchedAtis))
                 {
-                    var fetchedAtis = Atis.ParseFromClowdAtis(atis);
-                    var isNewAirport = !existingAtisDict.ContainsKey(fetchedAtis.UniqueId);
+                    var isNewAirport = !existingAtisDict.ContainsKey(fetchedAtis!.UniqueId);
                     var isNewLetter = !isNewAirport && existingAtisDict[fetchedAtis.UniqueId].InfoLetter != fetchedAtis.InfoLetter;
 
                     if (isNewAirport)
@@ -83,9 +82,9 @@ public class DigitalAtisBackgroundService : BackgroundService
                         updatedAtisDict.Add(fetchedAtis.UniqueId, fetchedAtis);
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogError("Error parsing D-ATIS for {id}: {raw}: {exception}", atis.Airport, atis.Datis, ex.ToString());
+                    _logger.LogError("Error parsing D-ATIS for {id}: {raw}", atis.Airport, atis.Datis);
                 }
             }
 
