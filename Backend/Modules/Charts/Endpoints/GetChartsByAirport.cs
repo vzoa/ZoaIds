@@ -55,7 +55,7 @@ public class GetChartsByAirport : Endpoint<AirportRequest, AllChartsResponse>
     public override void Configure()
     {
         //Get("/charts/{id}");
-        Get("/charts/{id}", "/airports/{id}/charts");
+        Get(ChartsModule.BaseUri + "/{id}", "/airports/{id}/charts");
         ResponseCache(_appSettings.CurrentValue.CacheTtls.Charts);
         AllowAnonymous();
         Version(1);

@@ -1,7 +1,7 @@
 ﻿using ZoaIdsBackend.Common.Interfaces;
 using ZoaIdsBackend.Modules.Charts.Services;
 
-namespace ZoaIdsBackend.Modules.Airlines;
+namespace ZoaIdsBackend.Modules.Charts;
 
 public class ChartsModule : IServiceConfigurator
 {
