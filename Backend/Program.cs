@@ -89,16 +89,19 @@ public class Program
         });
 
 
+        // UseCors must come before response caching
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseCors(b => b.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+        }
+
         // Response caching
         app.UseResponseCaching();
 
         app.UseAuthorization();
 
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseCors(b => b.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-        }
+        
 
         app.UseDefaultExceptionHandler();
         app.UseFastEndpoints(c =>

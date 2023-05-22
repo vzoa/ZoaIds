@@ -1,14 +1,31 @@
 ﻿using FastEndpoints;
 using FluentValidation;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System.Net.Mime;
+using ZoaIdsBackend.Modules.Charts.Models;
+using ZoaIdsBackend.Modules.Charts.Services;
 
 namespace ZoaIdsBackend.Modules.Charts.Endpoints;
 
 public class AirportRequest
 {
     public string Id { get; set; } = string.Empty;
+}
+
+public class AllChartsResponse
+{
+    public string AirportName { get; set; } = string.Empty;
+    public string FaaIdent { get; set; } = string.Empty;
+    public string IcaoIdent { get; set; } = string.Empty;
+    public IEnumerable<SingleChartResponse > Charts { get; set; } = Enumerable.Empty<SingleChartResponse>();
+
+}
+
+public class SingleChartResponse
+{
+    public string ChartSeq { get; set; } = string.Empty;
+    public string ChartCode { get; set; } = string.Empty;
+    public string ChartName { get; set; } = string.Empty;
+    public IEnumerable<ChartPage> Pages { get; set; } = Enumerable.Empty<ChartPage>();
 }
 
 public class AirportRequestValidator : Validator<AirportRequest>
@@ -21,18 +38,18 @@ public class AirportRequestValidator : Validator<AirportRequest>
     }
 }
 
-public class GetChartsByAirport : Endpoint<AirportRequest, string>
+public class GetChartsByAirport : Endpoint<AirportRequest, AllChartsResponse>
 {
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<AppSettings> _appSettings;
-    private readonly IMemoryCache _cache;
+    private readonly AviationApiChartService _chartService;
 
-    public GetChartsByAirport(HttpClient httpClient, IOptionsMonitor<AppSettings> appSettings, IMemoryCache cache)
+    public GetChartsByAirport(HttpClient httpClient, IOptionsMonitor<AppSettings> appSettings, AviationApiChartService chartService)
     {
         _httpClient = httpClient;
         _appSettings = appSettings;
         _httpClient.BaseAddress = new Uri(_appSettings.CurrentValue.Urls.ChartsApiEndpoint);
-        _cache = cache;
+        _chartService = chartService;
     }
 
     public override void Configure()
@@ -46,26 +63,27 @@ public class GetChartsByAirport : Endpoint<AirportRequest, string>
 
     public override async Task HandleAsync(AirportRequest request, CancellationToken c)
     {
-        if (_cache.TryGetValue<string>(MakeCacheKey(request.Id), out var result))
+        var charts = await _chartService.GetChartsForId(request.Id, c);
+        if (charts.Any())
         {
-            await SendStringAsync(result!, contentType: MediaTypeNames.Application.Json);
+            var response = new AllChartsResponse
+            {
+                AirportName = charts.First().AirportName,
+                FaaIdent = charts.First().FaaIdent,
+                IcaoIdent = charts.First().IcaoIdent,
+                Charts = charts.Select(c => new SingleChartResponse
+                {
+                    ChartSeq = c.ChartSeq,
+                    ChartCode = c.ChartCode,
+                    ChartName = c.ChartName,
+                    Pages = c.Pages
+                })
+            };
+            await SendAsync(response);
         }
         else
         {
-            var fetchedResult = await _httpClient.GetStringAsync($"?apt={request.Id}", c); // TODO maybe implement polly for resiliency
-
-            if (fetchedResult is null)
-            {
-                ThrowError("Effor fetching charts from AviationApi");
-            }
-            else
-            {
-                var expiration = DateTimeOffset.UtcNow.AddSeconds(_appSettings.CurrentValue.CacheTtls.Charts);
-                _cache.Set(MakeCacheKey(request.Id), fetchedResult, expiration);
-                await SendStringAsync(fetchedResult, contentType: MediaTypeNames.Application.Json);
-            }
+            await SendNotFoundAsync();
         }
     }
-
-    private static string MakeCacheKey(string id) => $"ChartsCacheKey:{id.ToUpper()}";
 }
