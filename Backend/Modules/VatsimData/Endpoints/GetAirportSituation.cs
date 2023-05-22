@@ -1,6 +1,7 @@
 ﻿using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using ZoaIdsBackend.Data;
 using ZoaIdsBackend.Modules.VatsimData.Models;
 using ZoaIdsBackend.Modules.VatsimData.Repositories;
@@ -44,11 +45,13 @@ public class GetAirportSituation : Endpoint<AirportSituationRequest, AirportSitu
 {
     private readonly IDbContextFactory<ZoaIdsContext> _contextFactory;
     private readonly IVatsimDataRepository _repository;
+    private readonly IMemoryCache _cache;
 
-    public GetAirportSituation(IDbContextFactory<ZoaIdsContext> contextFactory, IVatsimDataRepository repository)
+    public GetAirportSituation(IDbContextFactory<ZoaIdsContext> contextFactory, IVatsimDataRepository repository, IMemoryCache cache)
     {
         _contextFactory = contextFactory;
         _repository = repository;
+        _cache = cache;
     }
 
     public override void Configure()
@@ -60,25 +63,35 @@ public class GetAirportSituation : Endpoint<AirportSituationRequest, AirportSitu
 
     public override async Task HandleAsync(AirportSituationRequest request, CancellationToken c)
     {
-        using var db = await _contextFactory.CreateDbContextAsync(c);
+        var vatsimData = await _repository.GetLatestDataAsync(c);
 
-        // Find requested airport info
+        // Check if we have a cached result from the current VATSIM datafeed timestamp. If so return early
+        if (_cache.TryGetValue<(string timestamp, AirportSituationResponse response)>(MakeCacheKey(request.FaaId.ToUpper()), out var cachedResult))
+        {
+            if (vatsimData is not null && vatsimData.General.Update == cachedResult.timestamp)
+            {
+                await SendAsync(cachedResult.response);
+                return;
+            }
+        }
+
+        // If not, make the new response
+        using var db = await _contextFactory.CreateDbContextAsync(c);
         var id = request.FaaId.ToUpper();
         var airport = await db.Airports.FindAsync(id);
         if (airport is null)
         {
             ThrowError("Not a valid FAA LID");
         }
-
-        var root = await _repository.GetLatestDataAsync(c);
+                
         var response = new AirportSituationResponse
         {
             FaaId = id,
-            Atis = root.GetAtis(airport.IcaoId).ToList(),
-            Controllers = root.GetCabControllersByPrefix(id).ToList(),
+            Atis = vatsimData.GetAtis(airport.IcaoId).ToList(),
+            Controllers = vatsimData.GetCabControllersByPrefix(id).ToList(),
         };
 
-        foreach (var pilot in root.Pilots)
+        foreach (var pilot in vatsimData.Pilots)
         {
             if (pilot.FlightPlan is not null)
             {
@@ -111,6 +124,10 @@ public class GetAirportSituation : Endpoint<AirportSituationRequest, AirportSitu
             }
         }
 
+        // Cache new result and return
+        _cache.Set<(string, AirportSituationResponse)>(MakeCacheKey(request.FaaId.ToUpper()), (vatsimData.General.Update, response));
         await SendAsync(response);
     }
+
+    private static string MakeCacheKey(string airportId) => $"AirportSituation:{airportId}";
 }
