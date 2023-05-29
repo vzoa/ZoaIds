@@ -66,7 +66,7 @@ public class DigitalAtisBackgroundService : BackgroundService
             // Try to parse each new D-ATIS and determine which are new airports, which are updates, annd which are neither
             var updatedAtisDict = new Dictionary<string, Atis>();
             var newAtisDict = new Dictionary<string, Atis>();
-            foreach (var atis in apiAtisList)
+            foreach (var atis in apiAtisList ?? Enumerable.Empty<ClowdDatisDto>())
             {
                 if (Atis.TryParseFromClowdAtis(atis, out var fetchedAtis))
                 {

@@ -40,15 +40,12 @@ public class AirportRequestValidator : Validator<AirportRequest>
 
 public class GetChartsByAirport : Endpoint<AirportRequest, AllChartsResponse>
 {
-    private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<AppSettings> _appSettings;
     private readonly AviationApiChartService _chartService;
 
-    public GetChartsByAirport(HttpClient httpClient, IOptionsMonitor<AppSettings> appSettings, AviationApiChartService chartService)
+    public GetChartsByAirport(IOptionsMonitor<AppSettings> appSettings, AviationApiChartService chartService)
     {
-        _httpClient = httpClient;
         _appSettings = appSettings;
-        _httpClient.BaseAddress = new Uri(_appSettings.CurrentValue.Urls.ChartsApiEndpoint);
         _chartService = chartService;
     }
 
@@ -64,26 +61,25 @@ public class GetChartsByAirport : Endpoint<AirportRequest, AllChartsResponse>
     public override async Task HandleAsync(AirportRequest request, CancellationToken c)
     {
         var charts = await _chartService.GetChartsForId(request.Id, c);
-        if (charts.Any())
-        {
-            var response = new AllChartsResponse
-            {
-                AirportName = charts.First().AirportName,
-                FaaIdent = charts.First().FaaIdent,
-                IcaoIdent = charts.First().IcaoIdent,
-                Charts = charts.Select(c => new SingleChartResponse
-                {
-                    ChartSeq = c.ChartSeq,
-                    ChartCode = c.ChartCode,
-                    ChartName = c.ChartName,
-                    Pages = c.Pages
-                })
-            };
-            await SendAsync(response);
-        }
-        else
+        if (!charts.Any())
         {
             await SendNotFoundAsync();
         }
+        
+        var response = new AllChartsResponse
+        {
+            AirportName = charts.First().AirportName,
+            FaaIdent = charts.First().FaaIdent,
+            IcaoIdent = charts.First().IcaoIdent,
+            Charts = charts.Select(c => new SingleChartResponse
+            {
+                ChartSeq = c.ChartSeq,
+                ChartCode = c.ChartCode,
+                ChartName = c.ChartName,
+                Pages = c.Pages
+            })
+        };
+
+        await SendAsync(response);
     }
 }

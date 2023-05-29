@@ -32,7 +32,7 @@ public class GetReferenceBindersHierarchy : EndpointWithoutRequest<INode>
     {
         if (_cache.TryGetValue(ReferenceBindersBackgroundService.CacheKey, out var binder))
         {
-            if (binder is not null && binder is Binder)
+            if (binder is not null and Binder)
             {
                 var str = JsonSerializer.Serialize((Binder)binder, _serializerOptions);
                 await SendStringAsync(str, contentType: MediaTypeNames.Application.Json);

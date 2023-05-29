@@ -25,6 +25,8 @@ public class Polygon : IPolygon
         _points = points.ToList();
     }
 
+    public bool Contains(double latitude, double longitude) => Contains(new GeoCoordinate(latitude, longitude));
+
     public bool Contains(GeoCoordinate location)
     {
         GeoCoordinate[] polygonPointsWithClosure = PolygonPointsWithClosure();

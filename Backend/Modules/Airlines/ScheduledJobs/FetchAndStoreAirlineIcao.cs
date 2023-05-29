@@ -14,13 +14,13 @@ public class FetchAndStoreAirlineIcao : IInvocable
 {
     private readonly ILogger<FetchAndStoreAirlineIcao> _logger;
     private readonly IDbContextFactory<ZoaIdsContext> _contextFactory;
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptionsMonitor<AppSettings> _appSettings;
 
-    public FetchAndStoreAirlineIcao(ILogger<FetchAndStoreAirlineIcao> logger, IDbContextFactory<ZoaIdsContext> contextFactory, HttpClient httpClient, IOptionsMonitor<AppSettings> appSettings)
+    public FetchAndStoreAirlineIcao(ILogger<FetchAndStoreAirlineIcao> logger, IDbContextFactory<ZoaIdsContext> contextFactory, IHttpClientFactory httpClientFactory, IOptionsMonitor<AppSettings> appSettings)
     {
         _logger = logger;
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
         _contextFactory = contextFactory;
         _appSettings = appSettings;
     }
@@ -42,7 +42,8 @@ public class FetchAndStoreAirlineIcao : IInvocable
 
         // Setup reads and DB context
         var url = _appSettings.CurrentValue.Urls.AirlinesCsv;
-        using var responseStream = await _httpClient.GetStreamAsync(url);
+        var client = _httpClientFactory.CreateClient();
+        using var responseStream = await client.GetStreamAsync(url);
         using var reader = new StreamReader(responseStream);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         using var db = await _contextFactory.CreateDbContextAsync();
@@ -85,7 +86,7 @@ public class FetchAndStoreAirlineIcao : IInvocable
             Caller = GetType().Name,
             Time = DateTime.UtcNow,
             JobKey = "fetch",
-            JobValue = csvUpdated,
+            JobValue = csvUpdated ?? string.Empty,
             Status = ApplicationJobRecord.ExitStatus.Success
         };
         await db.CompletedJobs.AddAsync(job);

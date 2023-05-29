@@ -44,7 +44,7 @@ public class GetPilotsWithinArtcc : Endpoint<ArtccPilotsRequest, IEnumerable<Vat
         var vatsimData = await _repository.GetLatestDataAsync();
 
         // Check if we have a cached result from the current VATSIM datafeed timestamp. If so return early
-        if (_cache.TryGetValue<(string timestamp, IEnumerable<VatsimJsonPilot> pilots)>(MakeCacheKey(request.Id.ToUpper()), out var cachedResult))
+        if (_cache.TryGetValue<(string timestamp, ICollection<VatsimJsonPilot> pilots)>(MakeCacheKey(request.Id.ToUpper()), out var cachedResult))
         {
             if (vatsimData is not null && vatsimData.General.Update == cachedResult.timestamp)
             {
@@ -63,19 +63,19 @@ public class GetPilotsWithinArtcc : Endpoint<ArtccPilotsRequest, IEnumerable<Vat
         }
 
         var artccsList = await artccs.ToListAsync();
-        var polygons = artccsList.SelectMany(a => JsonSerializer.Deserialize<List<Polygon>>(a.SerializedBoundingPolygons, _jsonSerializerOptions));
+        var polygons = artccsList.SelectMany(a => JsonSerializer.Deserialize<List<Polygon>>(a.SerializedBoundingPolygons, _jsonSerializerOptions) ?? Enumerable.Empty<Polygon>());
         var returnPilots = new List<VatsimJsonPilot>();
         foreach (var pilot in vatsimData.Pilots)
         {
-            var containsList = polygons.Select(p => p.Contains(new GeoCoordinate((double)pilot.Latitude!, (double)pilot.Longitude!)));
+            var containsList = polygons.Select(p => p.Contains((double)pilot.Latitude!, (double)pilot.Longitude!));
             if (containsList.Contains(true))
             {
                 returnPilots.Add(pilot);
             }
         }
 
-        // Cache new result and return
-        _cache.Set<(string, IEnumerable<VatsimJsonPilot>)>(MakeCacheKey(request.Id.ToUpper()), (vatsimData.General.Update, returnPilots));
+        // Cache new result as collection and return
+        _cache.Set<(string, ICollection<VatsimJsonPilot>)>(MakeCacheKey(request.Id.ToUpper()), (vatsimData.General.Update, returnPilots));
         await SendAsync(returnPilots);
     }
 

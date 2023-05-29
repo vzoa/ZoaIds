@@ -7,16 +7,15 @@ namespace ZoaIdsBackend.Modules.Charts.Services;
 public class AviationApiChartService
 {
     private readonly ILogger<AviationApiChartService> _logger;
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptionsMonitor<AppSettings> _appSettings;
     private readonly IMemoryCache _cache;
 
-    public AviationApiChartService(ILogger<AviationApiChartService> logger, HttpClient httpClient, IOptionsMonitor<AppSettings> appSettings, IMemoryCache cache)
+    public AviationApiChartService(ILogger<AviationApiChartService> logger, IHttpClientFactory httpClientFactory, IOptionsMonitor<AppSettings> appSettings, IMemoryCache cache)
     {
         _logger = logger;
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
         _appSettings = appSettings;
-        _httpClient.BaseAddress = new Uri(_appSettings.CurrentValue.Urls.ChartsApiEndpoint);
         _cache = cache;
     }
 
@@ -62,7 +61,9 @@ public class AviationApiChartService
     
     private async Task<IEnumerable<AviationApiChartDto>> GetChartsDtoForId(string id, CancellationToken c = default)
     {
-        var apiJson = await _httpClient.GetFromJsonAsync<Dictionary<string, ICollection<AviationApiChartDto>>>($"?apt={id}", c);
+        var client = _httpClientFactory.CreateClient();
+        client.BaseAddress = new Uri(_appSettings.CurrentValue.Urls.ChartsApiEndpoint);
+        var apiJson = await client.GetFromJsonAsync<Dictionary<string, ICollection<AviationApiChartDto>>>($"?apt={id}", c);
         return apiJson is not null ? apiJson.Values.SelectMany(c => c) : Enumerable.Empty<AviationApiChartDto>();
     }
 
@@ -71,17 +72,15 @@ public class AviationApiChartService
         name = null; 
         page = null;
         
-        if (chartDto.ChartName.Contains(", CONT."))
-        {
-            var split = chartDto.ChartName.Split(", CONT.");
-            name = split[0];
-            page = int.Parse(split[1]) + 1; // Means that "CONT.1" returns page 2
-            return true;
-        }
-        else
+        if (!chartDto.ChartName.Contains(", CONT."))
         {
             return false;
         }
+
+        var split = chartDto.ChartName.Split(", CONT.");
+        name = split[0];
+        page = int.Parse(split[1]) + 1; // Means that "CONT.1" returns page 2
+        return true;
     }
 
     private static Chart MakeChart(AviationApiChartDto chartDto, string name = "", int pageNumber = -1)

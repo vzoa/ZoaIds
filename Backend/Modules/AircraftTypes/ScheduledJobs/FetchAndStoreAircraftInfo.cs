@@ -14,13 +14,13 @@ public class FetchAndStoreAircraftInfo : IInvocable
 {
     private readonly ILogger<FetchAndStoreAircraftInfo> _logger;
     private readonly IDbContextFactory<ZoaIdsContext> _contextFactory;
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptionsMonitor<AppSettings> _appSettings;
 
-    public FetchAndStoreAircraftInfo(ILogger<FetchAndStoreAircraftInfo> logger, IDbContextFactory<ZoaIdsContext> contextFactory, HttpClient httpClient, IOptionsMonitor<AppSettings> appSettings)
+    public FetchAndStoreAircraftInfo(ILogger<FetchAndStoreAircraftInfo> logger, IDbContextFactory<ZoaIdsContext> contextFactory, IHttpClientFactory httpClientFactory, IOptionsMonitor<AppSettings> appSettings)
     {
         _logger = logger;
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
         _contextFactory = contextFactory;
         _appSettings = appSettings;
     }
@@ -44,7 +44,8 @@ public class FetchAndStoreAircraftInfo : IInvocable
         //}
 
         // Setup reads and DB context
-        using var responseStream = await _httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.AircraftCsv);
+        var client = _httpClientFactory.CreateClient();
+        using var responseStream = await client.GetStreamAsync(_appSettings.CurrentValue.Urls.AircraftCsv);
         using var reader = new StreamReader(responseStream);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         using var db = await _contextFactory.CreateDbContextAsync();

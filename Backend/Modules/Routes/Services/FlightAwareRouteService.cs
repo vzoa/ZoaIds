@@ -9,13 +9,13 @@ namespace ZoaIdsBackend.Modules.Routes.Services;
 
 public partial class FlightAwareRouteService
 {
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IOptionsMonitor<AppSettings> _appSettings;
     private readonly IMemoryCache _cache;
 
-    public FlightAwareRouteService(HttpClient httpClient, IOptionsMonitor<AppSettings> appSettings, IMemoryCache cache)
+    public FlightAwareRouteService(IHttpClientFactory httpClientFactory, IOptionsMonitor<AppSettings> appSettings, IMemoryCache cache)
     {
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
         _appSettings = appSettings;
         _cache = cache;
     }
@@ -35,7 +35,8 @@ public partial class FlightAwareRouteService
             var returnRoute = new AirportPairRouteSummary(departureIcao, arrivalIcao);
 
             // Open FlightAware IFR routing page
-            using var stream = await _httpClient.GetStreamAsync(MakeUrl(departureIcao, arrivalIcao));
+            var client = _httpClientFactory.CreateClient();
+            using var stream = await client.GetStreamAsync(MakeUrl(departureIcao, arrivalIcao));
             var parser = new HtmlParser();
             using var document = await parser.ParseDocumentAsync(stream);
 
@@ -109,7 +110,7 @@ public partial class FlightAwareRouteService
         }
     }
 
-    private string MakeUrl(string departureIcao, string arrivalIcao)
+    private string MakeUrl(string departureIcao, string arrivalIcao)// => $"{appSettings.CurrentValue.Urls.FlightAwareIfrRouteBase}origin={departureIcao}&destination{arrivalIcao}";
     {
         return _appSettings.CurrentValue.Urls.FlightAwareIfrRouteBase + @"origin=" + departureIcao + @"&destination=" + arrivalIcao;
     }
