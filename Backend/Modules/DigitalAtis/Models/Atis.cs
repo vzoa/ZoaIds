@@ -8,8 +8,10 @@ public class Atis
     public AtisType Type { get; set; }
     public char InfoLetter { get; set; }
     public DateTime IssueTime { get; set; }
+    public int Altimeter { get; set; }
     public string RawText { get; set; }
     public string WeatherText { get; set; }
+    public string StatusText { get; set; }
     public string UniqueId { get; private set; }
 
     public static bool TryParseFromClowdAtis(ClowdDatisDto clowdAtis, out Atis? newAtis)
@@ -18,7 +20,7 @@ public class Atis
 
         try
         {
-            newAtis = new Atis()
+            newAtis = new Atis
             {
                 IcaoId = clowdAtis.Airport,
                 Type = ParseAtisType(clowdAtis.Type),
@@ -28,16 +30,16 @@ public class Atis
 
             // Parse letter and time from first sentence and add to new Atis
             var letterTimePattern = @"INFO ([A-Z]) ([0-9]{2})([0-9]{2})Z";
-            var matches = Regex.Match(clowdAtis.Datis, letterTimePattern);
-            if (matches.Success)
+            var infoMatch = Regex.Match(clowdAtis.Datis, letterTimePattern);
+            if (infoMatch.Success)
             {
-                newAtis.InfoLetter = char.Parse(matches.Groups[1].Value);
+                newAtis.InfoLetter = char.Parse(infoMatch.Groups[1].Value);
                 newAtis.IssueTime = new DateTime(
                     DateTime.UtcNow.Year,
                     DateTime.UtcNow.Month,
                     DateTime.UtcNow.Day,
-                    int.Parse(matches.Groups[2].Value), // Hours
-                    int.Parse(matches.Groups[3].Value), // Minutes
+                    int.Parse(infoMatch.Groups[2].Value), // Hours
+                    int.Parse(infoMatch.Groups[3].Value), // Minutes
                     0,
                     DateTimeKind.Utc
                 );
@@ -47,8 +49,20 @@ public class Atis
                 }
             }
 
+            // Parse altimeter from weather string
+            var altimeterPattern = @"A[0-9]{4}";
+            var altimeterMatch = Regex.Match(clowdAtis.Datis, altimeterPattern);
+            if (altimeterMatch.Success)
+            {
+                newAtis.Altimeter = int.Parse(altimeterMatch.Groups[0].Value[1..]);
+            }
+
             // Take 2nd sentence as WX string (by convention)
             newAtis.WeatherText = clowdAtis.Datis.Split(". ")[1];
+
+            // Take the rest of the string as status string (by convention)
+            newAtis.StatusText = clowdAtis.Datis.Split(". ", 3)[2];
+
             return true;
         }
         catch (Exception)
