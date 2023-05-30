@@ -34,15 +34,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\kcg\source\repos\ZoaIds\Backend\.editorconfig" />
+    <EditorConfigFiles Remove=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="C:\Users\kcg\source\repos\ZoaIds\Backend\.editorconfig" />
+    <None Include=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-	<Content Include="wwwroot\**\*" CopyToPublishDirectory="PreserveNewest" />
+	  <Folder Include="wwwroot\">
+		  <Publish>True</Publish>
+	  </Folder>
   </ItemGroup>
 
 </Project>
