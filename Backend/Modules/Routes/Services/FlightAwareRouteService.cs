@@ -83,8 +83,8 @@ public partial class FlightAwareRouteService
                 var newFlight = new RealWorldFlight
                 {
                     Callsign = tds[1].TextContent.Trim(),
-                    DepartureIcaoId = tds[1].TextContent,
-                    ArrivalIcaoId = tds[2].TextContent,
+                    DepartureIcaoId = tds[2].TextContent,
+                    ArrivalIcaoId = tds[3].TextContent,
                     AircraftIcaoId = tds[4].TextContent,
                     Altitude = Helpers.TryParseAltitude(tds[5].TextContent, out var alt) ? alt : null,
                     Route = tds[6].TextContent,
@@ -95,6 +95,11 @@ public partial class FlightAwareRouteService
                 if (routesDict.TryGetValue(newFlight.Route, out var route))
                 {
                     route.Flights.Add(newFlight);
+                }
+
+                if (returnRoute.MostRecent.Count < 10)
+                {
+                    returnRoute.MostRecent.Add(newFlight);
                 }
             }
 
