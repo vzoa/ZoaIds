@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 using ZoaIdsBackend.Common;
 using ZoaIdsBackend.Data;
 using ZoaIdsBackend.Modules.ReferenceBinders;
-using ZoaIdsBackend.Modules.ReferenceBinders.Models;
 
 namespace ZoaIdsBackend;
 
@@ -16,8 +15,9 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        builder.Host.UseSystemd();
 
+        // Add services to the container.
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -27,18 +27,23 @@ public class Program
         builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(AppSettings.SectionKeyName));
 
         // Add DB context
-        builder.Services.AddPooledDbContextFactory<ZoaIdsContext>(options => options
-            .UseSqlite(builder.Configuration.GetConnectionString("Sqlite"))
-        );
+        if(builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddPooledDbContextFactory<ZoaIdsContext>(options => options
+                .UseSqlite(builder.Configuration.GetConnectionString("Sqlite")));
+        }
+        else
+        {
+            builder.Services.AddPooledDbContextFactory<ZoaIdsContext>(options => options
+                .UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+        }
 
         builder.Services.AddHttpClient();
 
         // Response caching
         builder.Services.AddResponseCaching();
 
-
         builder.Services.AddMemoryCache();
-
 
         // Use Scrutor to scan and register services with DI container
         //builder.Services.Scan(scan => scan
@@ -60,16 +65,12 @@ public class Program
         // Add Coravel scheduler
         builder.Services.AddScheduler();
 
-
         builder.Services.AddCors();
-
 
         var app = builder.Build();
 
         // Scan for and add schedulers
         app.Services.UseSchedulers();
-
-
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -80,14 +81,12 @@ public class Program
 
         app.UseHttpsRedirection();
 
-
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(
                 Path.Combine(builder.Environment.WebRootPath, "Binders")),
                 RequestPath = ReferenceBindersModule.StaticPath
         });
-
 
         // UseCors must come before response caching
         if (app.Environment.IsDevelopment())
@@ -100,9 +99,6 @@ public class Program
 
         app.UseAuthorization();
 
-
-        
-
         app.UseDefaultExceptionHandler();
         app.UseFastEndpoints(c =>
         {
@@ -112,10 +108,12 @@ public class Program
             c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
         });
 
-
-        var dbContextFactory = app.Services.GetRequiredService<IDbContextFactory<ZoaIdsContext>>();
-        using var db = dbContextFactory.CreateDbContext();
-        db.Database.EnsureCreated();
+        if (app.Environment.IsDevelopment())
+        {
+            var dbContextFactory = app.Services.GetRequiredService<IDbContextFactory<ZoaIdsContext>>();
+            using var db = dbContextFactory.CreateDbContext();
+            db.Database.EnsureCreated();
+        }
 
         app.Run();
     }
