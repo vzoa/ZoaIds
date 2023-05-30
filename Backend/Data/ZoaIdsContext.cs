@@ -20,11 +20,7 @@ public class ZoaIdsContext : DbContext
     public DbSet<AircraftType> AircraftTypes { get; set; }
     public DbSet<Metar> Metars { get; set; }
     public DbSet<RvrObservation> RvrObservations { get; set; }
-
-
     public DbSet<Artcc> Artccs { get; set; }
-
-
     //public DbSet<AirportPairRouteSummary> RealWorldRoutings { get; set; }
 
 
@@ -32,42 +28,9 @@ public class ZoaIdsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Airport>()
-            .Ignore(a => a.RunwayEnds)
-            .HasKey(a => a.FaaId);
-
-        modelBuilder.Entity<Airport>().OwnsOne(a => a.Location);
-
-        modelBuilder.Entity<Airport>().OwnsMany(
-            a => a.Runways, r =>
-            {
-                r.WithOwner().HasForeignKey("AirportFaaId");
-                r.Property<int>("Id");
-                r.HasKey("Id");
-                r.OwnsMany(
-                    r => r.Ends, e =>
-                    {
-                        e.WithOwner().HasForeignKey("RunwayOwnerId");
-                        e.Property<int>("Id");
-                        e.HasKey("Id");
-                    });
-            });
-
-        // Atis needs a composite primary key because a given airport can
-        // have both a departure and an arrival ATIS
-        modelBuilder.Entity<Atis>()
-            .HasKey(a => new { a.IcaoId, a.Type });
-
-
-        modelBuilder.Entity<Airline>().HasKey(a => a.IcaoId);
-
-        // Aircraft Type Info needs a shadow property primary key because
-        // there can be multiple entries for a single aircraft ICAO code
-        modelBuilder.Entity<AircraftType>()
-            .Property<int>("AircraftTypeId")
-            .ValueGeneratedOnAdd();
-
-
+        // Scans assembly for all classes of IEntityTypeConfiguration
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ZoaIdsContext).Assembly);
+        
         //modelBuilder.Entity<AirportPairRouteSummary>()
         //    .HasKey(r => new { r.DepartureIcaoId, r.ArrivalIcaoId });
 
@@ -86,23 +49,5 @@ public class ZoaIdsContext : DbContext
         //                f.HasKey("Id");
         //            });
         //    });
-
-
-
-        modelBuilder.Entity<Metar>().HasKey(m => m.StationId);
-        modelBuilder.Entity<Metar>().OwnsOne(m => m.Location);
-        modelBuilder.Entity<Metar>().OwnsOne(m => m.Wind);
-        modelBuilder.Entity<Metar>().OwnsMany(
-            m => m.SkyCovers, s =>
-            {
-                s.WithOwner().HasForeignKey("StationId");
-                s.Property<int>("SkyCoverId");
-                s.HasKey("SkyCoverId");
-            });
-
-        modelBuilder.Entity<RvrObservation>().Property<int>("Id");
-        modelBuilder.Entity<RvrObservation>().HasKey("Id");
-
-        modelBuilder.Entity<Artcc>().HasKey(a => a.Guid);
     }
 }
