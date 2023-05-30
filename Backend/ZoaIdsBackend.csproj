@@ -42,9 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Folder Include="wwwroot\">
-		  <Publish>True</Publish>
-	  </Folder>
+	  <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
