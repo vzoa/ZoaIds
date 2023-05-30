@@ -1,0 +1,65 @@
+import { Component, For, Suspense, createMemo, createResource } from "solid-js";
+import { TimeDisplay } from "./TimeDisplay";
+import { NavBarItem } from "./NavBarItem";
+import { NavBarDropdown } from "./NavBarDropdown";
+import { NavBarDropdownItem } from "./NavBarDropdownItem";
+import wretch from "wretch";
+import { OpenToggleProvider } from "./NavBarContext";
+
+interface AirportResponse {
+  bravo: string[];
+  charlie: string[];
+  delta: string[];
+}
+
+const fetchAirports = async () => {
+  const url = new URL("v1/config/airports", import.meta.env.VITE_IDS_API_BASE).toString();
+  const json: AirportResponse = await wretch(url).get().json();
+  return json;
+};
+
+export const NavBar: Component = () => {
+  const [airports] = createResource(fetchAirports);
+  const airportsList = createMemo(() => {
+    if (airports.state == "ready") {
+      return airports()?.bravo.concat(
+        airports()?.charlie as string[],
+        airports()?.delta as string[]
+      );
+    }
+    return [];
+  });
+
+  return (
+    <div class="flex items-center bg-orange-900 py-1">
+      <TimeDisplay />
+      <nav>
+        <OpenToggleProvider>
+          <ul class="container flex list-none items-center p-1 text-gray-200">
+            <NavBarItem name="Home" path="/" />
+            <NavBarItem name="ZOA Summary" path="/summary" />
+            <NavBarDropdown name="Tower" path="/tower">
+              <Suspense>
+                <For each={airportsList()}>
+                  {(airport) => (
+                    <NavBarDropdownItem name={airport} path={`/tower/${airport.toLowerCase()}`} />
+                  )}
+                </For>
+              </Suspense>
+            </NavBarDropdown>
+            <NavBarItem name="TRACON" path="/about" />
+            <NavBarItem name="Reference" path="/reference" />
+            <NavBarItem name="Pireps" path="/about" />
+            <NavBarDropdown name="Dropdown" path="/dropdown">
+              <NavBarDropdownItem name="Dropdown" path="/dropdown" />
+              <NavBarDropdownItem name="Dropdown" path="/dropdown" />
+              <NavBarDropdownItem name="Dropdown" path="/dropdown" />
+              <NavBarDropdownItem name="Dropdown" path="/dropdown" />
+              <NavBarDropdownItem name="Dropdown" path="/dropdown" />
+            </NavBarDropdown>
+          </ul>
+        </OpenToggleProvider>
+      </nav>
+    </div>
+  );
+};
