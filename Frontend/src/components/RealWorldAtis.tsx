@@ -15,8 +15,7 @@ interface Atis {
 
 const fetchAtisForAirport = async (id: string) => {
   const url = new URL(`v1/datis/${id}`, import.meta.env.VITE_IDS_API_BASE).toString();
-  const json: Atis[] = await wretch(url).get().json();
-  return json;
+  return (await wretch(url).get().json()) as Atis[];
 };
 
 interface RealWorldAtisProps {

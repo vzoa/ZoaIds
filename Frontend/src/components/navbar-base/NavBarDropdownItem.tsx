@@ -1,6 +1,7 @@
+import { DropdownMenu } from "@kobalte/core";
 import { clsx } from "clsx";
 import { Component, Setter } from "solid-js";
-import { A } from "solid-start";
+import { A, useNavigate } from "solid-start";
 
 interface NavBarDropdownItemProps {
   name: string;
@@ -9,11 +10,16 @@ interface NavBarDropdownItemProps {
 }
 
 export const NavBarDropdownItem: Component<NavBarDropdownItemProps> = (props) => {
+  const navigate = useNavigate();
   return (
-    <li class={clsx("hover whitespace-nowrap px-2 py-1 hover:bg-white hover:bg-opacity-10")}>
+    <DropdownMenu.Item
+      as="li"
+      class={clsx("hover whitespace-nowrap px-2 py-1 hover:bg-white hover:bg-opacity-10")}
+      onSelect={() => navigate(props.path)}
+    >
       <A href={props.path} class="focus:outline-none">
         {props.name}
       </A>
-    </li>
+    </DropdownMenu.Item>
   );
 };
