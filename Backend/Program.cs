@@ -27,16 +27,8 @@ public class Program
         builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(AppSettings.SectionKeyName));
 
         // Add DB context
-        if(builder.Environment.IsDevelopment())
-        {
-            builder.Services.AddPooledDbContextFactory<ZoaIdsContext>(options => options
-                .UseSqlite(builder.Configuration.GetConnectionString("Sqlite")));
-        }
-        else
-        {
-            builder.Services.AddPooledDbContextFactory<ZoaIdsContext>(options => options
+        builder.Services.AddPooledDbContextFactory<ZoaIdsContext>(options => options
                 .UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
-        }
 
         builder.Services.AddHttpClient();
 

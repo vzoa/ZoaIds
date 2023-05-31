@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ZoaIdsBackend.Data;
 
 #nullable disable
@@ -15,31 +16,37 @@ namespace ZoaIdsBackend.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "7.0.5");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("ZoaIdsBackend.Common.ApplicationJobRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Caller")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("JobKey")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("JobValue")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Time")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -50,55 +57,57 @@ namespace ZoaIdsBackend.Migrations
                 {
                     b.Property<int>("AircraftTypeId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AircraftTypeId"));
 
                     b.Property<string>("Class")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("ConslidatedWakeTurbulenceCategory")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("EngineCount")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("EngineType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("FaaEngineNumberType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("FaaWeightClass")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("IcaoId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("IcaoWakeTurbulenceCategory")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("LandAndHoldShortGroup")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Manufacturer")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Model")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("SameRunwaySeparationCategory")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("AircraftTypeId");
 
@@ -108,18 +117,18 @@ namespace ZoaIdsBackend.Migrations
             modelBuilder.Entity("ZoaIdsBackend.Modules.Airlines.Models.Airline", b =>
                 {
                     b.Property<string>("IcaoId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Callsign")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("IcaoId");
 
@@ -129,35 +138,35 @@ namespace ZoaIdsBackend.Migrations
             modelBuilder.Entity("ZoaIdsBackend.Modules.DigitalAtis.Models.Atis", b =>
                 {
                     b.Property<string>("IcaoId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Altimeter")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<char>("InfoLetter")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("character(1)");
 
                     b.Property<DateTime>("IssueTime")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RawText")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("StatusText")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("UniqueId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("WeatherText")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("IcaoId", "Type");
 
@@ -167,27 +176,27 @@ namespace ZoaIdsBackend.Migrations
             modelBuilder.Entity("ZoaIdsBackend.Modules.NasrData.Models.Airport", b =>
                 {
                     b.Property<string>("FaaId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Artcc")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<double>("Elevation")
-                        .HasColumnType("REAL");
+                        .HasColumnType("double precision");
 
                     b.Property<string>("IcaoId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int?>("TrueToMagneticDelta")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("FaaId");
 
@@ -198,39 +207,41 @@ namespace ZoaIdsBackend.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AirportFaaId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int?>("CenterlineLightSetting")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("EdgeLightSetting")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("Midpoint")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("MidpointTrend")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("Rollout")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("RolloutTrend")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<string>("RunwayEndName")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<int?>("Touchdown")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("TouchdownTrend")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -241,24 +252,24 @@ namespace ZoaIdsBackend.Migrations
                 {
                     b.Property<Guid>("Guid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Division")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsOceanic")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Region")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<string>("SerializedBoundingPolygons")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("Guid");
 
@@ -269,14 +280,16 @@ namespace ZoaIdsBackend.Migrations
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("RawJson")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("Time")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -286,38 +299,38 @@ namespace ZoaIdsBackend.Migrations
             modelBuilder.Entity("ZoaIdsBackend.Modules.Weather.Models.Metar", b =>
                 {
                     b.Property<string>("StationId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<float?>("AltimeterInHg")
-                        .HasColumnType("REAL");
+                        .HasColumnType("real");
 
                     b.Property<float?>("DewPointC")
-                        .HasColumnType("REAL");
+                        .HasColumnType("real");
 
                     b.Property<DateTime>("ObservationTime")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RawText")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.Property<float?>("SeaLevelPressureMb")
-                        .HasColumnType("REAL");
+                        .HasColumnType("real");
 
                     b.Property<float?>("TempC")
-                        .HasColumnType("REAL");
+                        .HasColumnType("real");
 
                     b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("VerticalVisibilityFt")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<float?>("VisibilityMi")
-                        .HasColumnType("REAL");
+                        .HasColumnType("real");
 
                     b.Property<string>("WeatherString")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("StationId");
 
@@ -329,13 +342,13 @@ namespace ZoaIdsBackend.Migrations
                     b.OwnsOne("ZoaIdsBackend.Common.GeoCoordinate", "Location", b1 =>
                         {
                             b1.Property<string>("AirportFaaId")
-                                .HasColumnType("TEXT");
+                                .HasColumnType("text");
 
                             b1.Property<double>("Latitude")
-                                .HasColumnType("REAL");
+                                .HasColumnType("double precision");
 
                             b1.Property<double>("Longitude")
-                                .HasColumnType("REAL");
+                                .HasColumnType("double precision");
 
                             b1.HasKey("AirportFaaId");
 
@@ -349,18 +362,20 @@ namespace ZoaIdsBackend.Migrations
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
 
                             b1.Property<string>("AirportFaaId")
                                 .IsRequired()
-                                .HasColumnType("TEXT");
+                                .HasColumnType("text");
 
                             b1.Property<int>("Length")
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
 
                             b1.Property<string>("Name")
                                 .IsRequired()
-                                .HasColumnType("TEXT");
+                                .HasColumnType("text");
 
                             b1.HasKey("Id");
 
@@ -375,34 +390,36 @@ namespace ZoaIdsBackend.Migrations
                                 {
                                     b2.Property<int>("Id")
                                         .ValueGeneratedOnAdd()
-                                        .HasColumnType("INTEGER");
+                                        .HasColumnType("integer");
+
+                                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b2.Property<int>("Id"));
 
                                     b2.Property<string>("AirportFaaId")
                                         .IsRequired()
-                                        .HasColumnType("TEXT");
+                                        .HasColumnType("text");
 
                                     b2.Property<double?>("EndElevation")
-                                        .HasColumnType("REAL");
+                                        .HasColumnType("double precision");
 
                                     b2.Property<int>("MagneticHeading")
-                                        .HasColumnType("INTEGER");
+                                        .HasColumnType("integer");
 
                                     b2.Property<string>("Name")
                                         .IsRequired()
-                                        .HasColumnType("TEXT");
+                                        .HasColumnType("text");
 
                                     b2.Property<string>("RunwayName")
                                         .IsRequired()
-                                        .HasColumnType("TEXT");
+                                        .HasColumnType("text");
 
                                     b2.Property<int>("RunwayOwnerId")
-                                        .HasColumnType("INTEGER");
+                                        .HasColumnType("integer");
 
                                     b2.Property<double?>("TdzElevation")
-                                        .HasColumnType("REAL");
+                                        .HasColumnType("double precision");
 
                                     b2.Property<int?>("TrueHeading")
-                                        .HasColumnType("INTEGER");
+                                        .HasColumnType("integer");
 
                                     b2.HasKey("Id");
 
@@ -428,13 +445,13 @@ namespace ZoaIdsBackend.Migrations
                     b.OwnsOne("ZoaIdsBackend.Common.GeoCoordinate", "Location", b1 =>
                         {
                             b1.Property<string>("MetarStationId")
-                                .HasColumnType("TEXT");
+                                .HasColumnType("text");
 
                             b1.Property<double>("Latitude")
-                                .HasColumnType("REAL");
+                                .HasColumnType("double precision");
 
                             b1.Property<double>("Longitude")
-                                .HasColumnType("REAL");
+                                .HasColumnType("double precision");
 
                             b1.HasKey("MetarStationId");
 
@@ -447,16 +464,16 @@ namespace ZoaIdsBackend.Migrations
                     b.OwnsOne("ZoaIdsBackend.Modules.Weather.Models.WindObservation", "Wind", b1 =>
                         {
                             b1.Property<string>("MetarStationId")
-                                .HasColumnType("TEXT");
+                                .HasColumnType("text");
 
                             b1.Property<int>("DirectionTrueDegrees")
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
 
                             b1.Property<int?>("GustKnots")
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
 
                             b1.Property<int>("SpeedKnots")
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
 
                             b1.HasKey("MetarStationId");
 
@@ -470,17 +487,19 @@ namespace ZoaIdsBackend.Migrations
                         {
                             b1.Property<int>("SkyCoverId")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("SkyCoverId"));
 
                             b1.Property<int?>("BaseFtAgl")
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
 
                             b1.Property<string>("StationId")
                                 .IsRequired()
-                                .HasColumnType("TEXT");
+                                .HasColumnType("text");
 
                             b1.Property<int>("Type")
-                                .HasColumnType("INTEGER");
+                                .HasColumnType("integer");
 
                             b1.HasKey("SkyCoverId");
 
