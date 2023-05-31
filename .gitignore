@@ -398,3 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 Backend/sqlite*
+Backend/efbundle.exe
