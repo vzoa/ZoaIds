@@ -1,7 +1,8 @@
-import { Component, For, Suspense, createMemo, createResource } from "solid-js";
+import { Component, For, Show, Suspense, createMemo, createResource } from "solid-js";
 import { TimeDisplay } from "./TimeDisplay";
 import { NavBarDropdownItem, NavBarDropdown, NavBarItem } from "./navbar-base";
 import wretch from "wretch";
+import { ErrorBoundary } from "solid-start";
 
 interface AirportResponse {
   bravo: string[];
@@ -18,10 +19,7 @@ export const NavBar: Component = () => {
   const [airports] = createResource(fetchAirports);
   const airportsList = createMemo(() => {
     if (airports.state == "ready") {
-      return airports()?.bravo.concat(
-        airports()?.charlie as string[],
-        airports()?.delta as string[]
-      );
+      return airports().bravo.concat(airports().charlie as string[], airports().delta as string[]);
     }
     return [];
   });
@@ -34,13 +32,15 @@ export const NavBar: Component = () => {
           <NavBarItem name="Home" path="/" />
           <NavBarItem name="ZOA Summary" path="/summary" />
           <NavBarDropdown name="Tower" path="/tower">
-            <Suspense>
-              <For each={airportsList()}>
-                {(airport) => (
-                  <NavBarDropdownItem name={airport} path={`/tower/${airport.toLowerCase()}`} />
-                )}
-              </For>
-            </Suspense>
+            <ErrorBoundary>
+              <Show when={airports()}>
+                <For each={airportsList()}>
+                  {(airport) => (
+                    <NavBarDropdownItem name={airport} path={`/tower/${airport.toLowerCase()}`} />
+                  )}
+                </For>
+              </Show>
+            </ErrorBoundary>
           </NavBarDropdown>
           <NavBarItem name="TRACON" path="/about" />
           <NavBarItem name="Reference" path="/reference" />
