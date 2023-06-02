@@ -28,7 +28,7 @@ export const NavBar: Component = () => {
     <div class="flex items-center bg-orange-900 py-1">
       <TimeDisplay />
       <nav>
-        <ul class="container flex list-none items-center p-1 text-gray-200">
+        <ul class="flex list-none items-center p-1 text-gray-200">
           <NavBarItem name="Home" path="/" />
           <NavBarItem name="ZOA Summary" path="/summary" />
           <NavBarDropdown name="Tower" path="/tower">
