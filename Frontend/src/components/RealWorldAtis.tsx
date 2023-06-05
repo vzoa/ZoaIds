@@ -1,7 +1,7 @@
 import { Component, ErrorBoundary, For, Suspense, createResource, onCleanup } from "solid-js";
 import wretch from "wretch";
 
-interface Atis {
+interface ApiAtisDto {
   icaoId: string;
   type: string;
   infoLetter: string;
@@ -15,7 +15,7 @@ interface Atis {
 
 const fetchAtisForAirport = async (id: string) => {
   const url = new URL(`v1/datis/${id}`, import.meta.env.VITE_IDS_API_BASE).toString();
-  return (await wretch(url).get().json()) as Atis[];
+  return (await wretch(url).get().json()) as ApiAtisDto[];
 };
 
 interface RealWorldAtisProps {
@@ -33,10 +33,13 @@ export const RealWorldAtis: Component<RealWorldAtisProps> = (props) => {
         <For each={atisList()}>
           {(atis) => (
             <div class="flex items-center">
-              <span class="ml-3">{atis.infoLetter}</span>
-              <span class="ml-3">{atis.issueTime}</span>
-              <span class="ml-3">{atis.weatherText}</span>
-              <span class="ml-3">{atis.statusText}</span>
+              <div class="flex flex-col items-center border border-stone-600 p-1.5">
+                <span class="text-sm">{atis.type}</span>
+                <span class="font-mono text-2xl text-yellow-500">{atis.infoLetter}</span>
+                <span class="text-sm">{atis.issueTime.slice(11, 16)}</span>
+              </div>
+              <span class="ml-3 border border-stone-600 p-1.5 text-sm">{atis.weatherText}</span>
+              <span class="ml-3 border border-stone-600 p-1.5 text-sm">{atis.statusText}</span>
             </div>
           )}
         </For>
