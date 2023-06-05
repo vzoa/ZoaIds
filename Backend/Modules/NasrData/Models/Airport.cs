@@ -5,7 +5,6 @@ namespace ZoaIdsBackend.Modules.NasrData.Models;
 public class Airport
 {
     public string FaaId { get; set; }
-
     public string? IcaoId { get; set; }
     public string Name { get; set; }
     public AirportType Type { get; set; }

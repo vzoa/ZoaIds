@@ -18,6 +18,7 @@ public class AppSettings
     {
         public int FlightAwareRoutes { get; set; } = 1200;
         public int Charts { get; set; } = 3600;
+        public int AirlineCodes { get; set; } = 3600;
     }
 
     public class UrlsSettings
