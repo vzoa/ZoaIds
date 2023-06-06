@@ -4,6 +4,7 @@ import { RealWorldAtis } from "~/components/RealWorldAtis";
 import wretch from "wretch";
 import { createResource } from "solid-js";
 import { AirportTraffic } from "~/components/AirportTraffic";
+import { CollapsiblePaper } from "~/components/CollapsiblePaper";
 
 interface Airport {
   faaId: string;
@@ -47,13 +48,13 @@ export default function AirportPage() {
 
   return (
     <>
-      <Paper>
+      <CollapsiblePaper title="Real World D-Atis">
         <span>{params.id}</span>
         <RealWorldAtis id={params.id} />
-      </Paper>
-      <Paper>
+      </CollapsiblePaper>
+      <CollapsiblePaper title="Traffic Situation">
         <AirportTraffic faaId={airport()?.faaId} />
-      </Paper>
+      </CollapsiblePaper>
     </>
   );
 }

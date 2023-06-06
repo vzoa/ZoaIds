@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@kobalte/core": "^0.9.6",
+    "@kobalte/tailwindcss": "^0.6.5",
     "@modular-forms/solid": "^0.16.0",
     "@solid-primitives/date": "^2.0.14",
     "@solidjs/meta": "^0.28.2",

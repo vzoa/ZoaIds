@@ -1,8 +1,9 @@
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table";
 import { Component, For, Show, createResource, onCleanup } from "solid-js";
 import wretch from "wretch";
-import { Atis, Controller, Pilot } from "~/vatsimdatafeed";
+import { Atis, Controller, FlightPlan, Pilot } from "~/vatsimdatafeed";
 import { AirlineTelephony } from "./AirlineTelephony";
+import { SkyVectorLink } from "./SkyVectorLink";
 
 interface ApiTrafficDto {
   faaId: string;
@@ -37,13 +38,13 @@ const defaultColumns: ColumnDef<Pilot>[] = [
   {
     accessorFn: (row) => row.flight_plan?.arrival,
     id: "arrival",
-    header: "Destination",
+    header: "Dest",
     cell: (info) => info.getValue<string>()
   },
   {
     accessorFn: (row) => row.flight_plan?.altitude,
     id: "altitude",
-    header: "Filed Altitude",
+    header: "Altitude",
     cell: (info) => info.getValue<string>()
   },
   {
@@ -59,6 +60,19 @@ const defaultColumns: ColumnDef<Pilot>[] = [
   {
     accessorKey: "name",
     header: "Name"
+  },
+  {
+    accessorFn: (row) => row.flight_plan,
+    id: "SkyVector",
+    header: "SkyVector",
+    cell: (info) => (
+      <SkyVectorLink
+        departure={info.getValue<FlightPlan>().departure}
+        arrival={info.getValue<FlightPlan>().arrival}
+        route={info.getValue<FlightPlan>().route}
+        text="View"
+      />
+    )
   }
 ];
 
@@ -84,14 +98,14 @@ export const AirportTraffic: Component<AirportTrafficProps> = (props) => {
       {/* <For each={traffic()?.onGround.departures}>
         {(departure) => <div>{departure.callsign}</div>}
       </For> */}
-      <table>
+      <table class="table-auto border-collapse">
         <thead>
           <For each={table.getHeaderGroups()}>
             {(headerGroup) => (
               <tr>
                 <For each={headerGroup.headers}>
                   {(header) => (
-                    <th>
+                    <th class="p-2 text-left">
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -105,9 +119,13 @@ export const AirportTraffic: Component<AirportTrafficProps> = (props) => {
         <tbody>
           <For each={table.getRowModel().rows}>
             {(row) => (
-              <tr>
+              <tr class="font-mono transition-colors hover:bg-stone-700">
                 <For each={row.getVisibleCells()}>
-                  {(cell) => <td>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>}
+                  {(cell) => (
+                    <td class="border border-stone-600 px-2 py-0.5">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  )}
                 </For>
               </tr>
             )}

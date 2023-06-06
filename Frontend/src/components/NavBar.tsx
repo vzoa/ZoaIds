@@ -42,16 +42,9 @@ export const NavBar: Component = () => {
               </Show>
             </ErrorBoundary>
           </NavBarDropdown>
-          <NavBarItem name="TRACON" path="/about" />
+          <NavBarItem name="TRACON" path="/tracon" />
           <NavBarItem name="Reference" path="/reference" />
-          <NavBarItem name="Pireps" path="/about" />
-          <NavBarDropdown name="Dropdown" path="/dropdown">
-            <NavBarDropdownItem name="Dropdown" path="/dropdown" />
-            <NavBarDropdownItem name="Dropdown" path="/dropdown" />
-            <NavBarDropdownItem name="Dropdown" path="/dropdown" />
-            <NavBarDropdownItem name="Dropdown" path="/dropdown" />
-            <NavBarDropdownItem name="Dropdown" path="/dropdown" />
-          </NavBarDropdown>
+          <NavBarItem name="Pireps" path="/pireps" />
         </ul>
       </nav>
     </div>
