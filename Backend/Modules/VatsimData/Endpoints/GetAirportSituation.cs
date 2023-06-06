@@ -15,6 +15,7 @@ public class AirportSituationRequest
 
 public class AirportSituationResponse
 {
+    public string Update { get; set; } = string.Empty;
     public string FaaId { get; set; } = string.Empty;
     //public ICollection<VatsimJsonPilot> OnGround { get; set; } = new List<VatsimJsonPilot>();
     public OnGroundResponse OnGround { get; set; } = new();
@@ -83,9 +84,10 @@ public class GetAirportSituation : Endpoint<AirportSituationRequest, AirportSitu
         {
             ThrowError("Not a valid FAA LID");
         }
-                
+
         var response = new AirportSituationResponse
         {
+            Update = vatsimData.General.Update,
             FaaId = id,
             Atis = vatsimData.GetAtis(airport.IcaoId).ToList(),
             Controllers = vatsimData.GetCabControllersByPrefix(id).ToList(),

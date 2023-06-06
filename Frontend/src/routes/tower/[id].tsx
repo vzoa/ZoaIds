@@ -1,10 +1,10 @@
 import { useParams } from "solid-start";
-import { Paper } from "~/components/Paper";
 import { RealWorldAtis } from "~/components/RealWorldAtis";
 import wretch from "wretch";
-import { createResource } from "solid-js";
+import { Show, createResource } from "solid-js";
 import { AirportTraffic } from "~/components/AirportTraffic";
 import { CollapsiblePaper } from "~/components/CollapsiblePaper";
+import { FlightAwareTable } from "~/components/FlightAwareTable";
 
 interface Airport {
   faaId: string;
@@ -49,12 +49,12 @@ export default function AirportPage() {
   return (
     <>
       <CollapsiblePaper title="Real World D-Atis">
-        <span>{params.id}</span>
         <RealWorldAtis id={params.id} />
       </CollapsiblePaper>
-      <CollapsiblePaper title="Traffic Situation">
-        <AirportTraffic faaId={airport()?.faaId} />
+      <CollapsiblePaper defaultOpen title="Traffic Situation">
+        <Show when={airport()}>{(airport) => <AirportTraffic faaId={airport().faaId} />}</Show>
       </CollapsiblePaper>
+      <FlightAwareTable departure="KSFO" arrival="KLAX" />
     </>
   );
 }

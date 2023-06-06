@@ -5,11 +5,15 @@ import { ParentComponent } from "solid-js";
 interface PaperProps {
   title: string;
   class?: string;
+  defaultOpen?: boolean;
 }
 
 export const CollapsiblePaper: ParentComponent<PaperProps> = (props) => {
   return (
-    <Collapsible.Root class={clsx("m-6 rounded bg-stone-800 p-6 shadow-xl", props.class)}>
+    <Collapsible.Root
+      defaultOpen={props.defaultOpen}
+      class={clsx("m-6 rounded bg-stone-800 p-6 shadow-xl", props.class)}
+    >
       <Collapsible.Trigger class="collapsible__trigger">
         <h1 class="text-xl">{props.title}</h1>
         <svg

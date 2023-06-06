@@ -29,7 +29,7 @@ export const RealWorldAtis: Component<RealWorldAtisProps> = (props) => {
 
   return (
     <ErrorBoundary fallback={<span>Not found</span>}>
-      <Suspense>
+      <Suspense fallback={<span>Loading</span>}>
         <For each={atisList()}>
           {(atis) => (
             <div class="flex items-center">

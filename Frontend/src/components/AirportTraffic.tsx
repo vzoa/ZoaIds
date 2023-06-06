@@ -1,12 +1,15 @@
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table";
-import { Component, For, Show, createResource, onCleanup } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import wretch from "wretch";
 import { Atis, Controller, FlightPlan, Pilot } from "~/vatsimdatafeed";
 import { AirlineTelephony } from "./AirlineTelephony";
 import { SkyVectorLink } from "./SkyVectorLink";
+import { FlightAwareModal } from "./FlightAwareModal";
+import { createQuery } from "@tanstack/solid-query";
 
 interface ApiTrafficDto {
   faaId: string;
+  update: string;
   onGround: { departures: Pilot[]; arrivals: Pilot[]; noFlightPlan: Pilot[] };
   enrouteArrivals: Pilot[];
   enrouteDepartures: Pilot[];
@@ -63,7 +66,7 @@ const defaultColumns: ColumnDef<Pilot>[] = [
   },
   {
     accessorFn: (row) => row.flight_plan,
-    id: "SkyVector",
+    id: "skyvector",
     header: "SkyVector",
     cell: (info) => (
       <SkyVectorLink
@@ -73,32 +76,57 @@ const defaultColumns: ColumnDef<Pilot>[] = [
         text="View"
       />
     )
+  },
+  {
+    accessorFn: (row) => row.flight_plan,
+    id: "realroute",
+    header: "Real Route",
+    cell: (info) => (
+      <FlightAwareModal
+        departure={info.getValue<FlightPlan>().departure}
+        arrival={info.getValue<FlightPlan>().arrival}
+        text="View"
+      />
+    )
+  },
+  {
+    accessorKey: "last_updated",
+    header: "Last Updated"
   }
 ];
 
 interface AirportTrafficProps {
-  faaId: string | undefined;
+  faaId: string;
 }
 
 export const AirportTraffic: Component<AirportTrafficProps> = (props) => {
-  const [traffic, { refetch }] = createResource(() => props.faaId, fetchTrafficForAirport);
-  const timer = setInterval(() => refetch(), 20 * 1000);
-  onCleanup(() => clearInterval(timer));
+  // const [traffic, { refetch }] = createResource(() => props.faaId, fetchTrafficForAirport, {
+  //   storage: createDeepSignal
+  // });
+
+  const query = createQuery(
+    () => ["trafficId", props.faaId],
+    () => fetchTrafficForAirport(props.faaId),
+    { refetchInterval: 20 * 1000 }
+  );
+
+  //const tableData = () => traffic.latest?.onGround.departures ?? [];
+
+  //const timer = setInterval(() => refetch(), 20 * 1000);
+  //onCleanup(() => clearInterval(timer));
 
   const table = createSolidTable({
     get data() {
-      return traffic.state == "ready" ? traffic()?.onGround.departures : [];
+      return query.data?.onGround.departures ?? [];
+      //return tableData();
     },
     columns: defaultColumns,
     getCoreRowModel: getCoreRowModel()
   });
 
   return (
-    <Show when={traffic()}>
-      {/* <For each={traffic()?.onGround.departures}>
-        {(departure) => <div>{departure.callsign}</div>}
-      </For> */}
-      <table class="table-auto border-collapse">
+    <Show when={query.data}>
+      <table class="table-auto border-collapse text-sm">
         <thead>
           <For each={table.getHeaderGroups()}>
             {(headerGroup) => (

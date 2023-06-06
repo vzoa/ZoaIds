@@ -1,7 +1,7 @@
 import { DropdownMenu } from "@kobalte/core";
 import { clsx } from "clsx";
-import { Component, Setter } from "solid-js";
-import { A, useLocation, useNavigate } from "solid-start";
+import { Component } from "solid-js";
+import { A, useLocation, useMatch, useNavigate } from "solid-start";
 
 interface NavBarDropdownItemProps {
   name: string;
@@ -10,7 +10,7 @@ interface NavBarDropdownItemProps {
 
 export const NavBarDropdownItem: Component<NavBarDropdownItemProps> = (props) => {
   const location = useLocation();
-  const isActive = () => location.pathname.startsWith(props.path);
+  const isActive = useMatch(() => props.path);
   const navigate = useNavigate();
   return (
     <DropdownMenu.Item
