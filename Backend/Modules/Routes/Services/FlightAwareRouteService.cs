@@ -65,7 +65,7 @@ public partial class FlightAwareRouteService
                     MinAltitude = TryParseMinAltitude(tds[3].TextContent, out var minAlt) ? minAlt : null,
                     MaxAltitude = TryParseMaxAltitude(tds[3].TextContent, out var maxAlt) ? maxAlt : null,
                     Route = tds[4].TextContent,
-                    DistanceMi = TryParseDistance(tds[5].TextContent, out var distance) ? distance : null,
+                    DistanceMi = tds.Length > 5 ? (TryParseDistance(tds[5].TextContent, out var distance) ? distance : null) : null,
                     Flights = new List<RealWorldFlight>()
                 };
                 returnRoute.FlightRouteSummaries.Add(newRouteSummary);
@@ -88,7 +88,7 @@ public partial class FlightAwareRouteService
                     AircraftIcaoId = tds[4].TextContent,
                     Altitude = Helpers.TryParseAltitude(tds[5].TextContent, out var alt) ? alt : null,
                     Route = tds[6].TextContent,
-                    Distance = TryParseDistance(tds[7].TextContent, out var distance) ? distance : null
+                    Distance = tds.Length > 7 ? (TryParseDistance(tds[7].TextContent, out var distance) ? distance : null) : null
                 };
 
                 // Add to associated RouteSummary
