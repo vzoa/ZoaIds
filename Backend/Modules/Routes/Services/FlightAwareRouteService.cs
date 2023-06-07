@@ -60,8 +60,8 @@ public partial class FlightAwareRouteService
                 var newRouteSummary = new FlightRouteSummary
                 {
                     RouteFrequency = int.Parse(tds[0].TextContent),
-                    DepartureIcaoId = tds[1].TextContent,
-                    ArrivalIcaoId = tds[2].TextContent,
+                    DepartureIcaoId = ParseId(tds[1].TextContent),
+                    ArrivalIcaoId = ParseId(tds[2].TextContent),
                     MinAltitude = TryParseMinAltitude(tds[3].TextContent, out var minAlt) ? minAlt : null,
                     MaxAltitude = TryParseMaxAltitude(tds[3].TextContent, out var maxAlt) ? maxAlt : null,
                     Route = tds[4].TextContent,
@@ -83,8 +83,8 @@ public partial class FlightAwareRouteService
                 var newFlight = new RealWorldFlight
                 {
                     Callsign = tds[1].TextContent.Trim(),
-                    DepartureIcaoId = tds[2].TextContent,
-                    ArrivalIcaoId = tds[3].TextContent,
+                    DepartureIcaoId = ParseId(tds[2].TextContent),
+                    ArrivalIcaoId = ParseId(tds[3].TextContent),
                     AircraftIcaoId = tds[4].TextContent,
                     Altitude = Helpers.TryParseAltitude(tds[5].TextContent, out var alt) ? alt : null,
                     Route = tds[6].TextContent,
@@ -145,6 +145,8 @@ public partial class FlightAwareRouteService
     {
         return ($"FlightAwareDeparture:{departureIcao.ToUpper()}", $"FlightAwareArrival:{arrivalIcao.ToUpper()}");
     }
+
+    private static string ParseId(string id) => id.Length > 4 ? id[^4..] : id;
 
     [GeneratedRegex("([\\s\\S]+) - ([\\s\\S]+)")]
     private static partial Regex AltitudeRangeRegex();
