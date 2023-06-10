@@ -1,6 +1,7 @@
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table";
 import { Component, For, Show, createResource } from "solid-js";
 import wretch from "wretch";
+import { Spinner } from "./Spinner";
 
 export interface FlightAwareRouteApiDto {
   departureIcaoId: string;
@@ -101,8 +102,8 @@ export const FlightAwareTable: Component<FlightAwareTableProps> = (props) => {
   });
 
   return (
-    <Show when={flights()}>
-      <h1 class="text-xl">Routes</h1>
+    <Show when={flights()} fallback={<Spinner />}>
+      {/* <h1 class="text-xl">Routes</h1> */}
       <table class="table-auto border-collapse text-sm">
         <thead>
           <For each={summaryTable.getHeaderGroups()}>

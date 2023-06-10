@@ -32,14 +32,21 @@ export const RealWorldAtis: Component<RealWorldAtisProps> = (props) => {
       <Suspense fallback={<span>Loading</span>}>
         <For each={atisList()}>
           {(atis) => (
-            <div class="flex items-center">
-              <div class="flex flex-col items-center border border-stone-600 p-1.5">
-                <span class="text-sm">{atis.type}</span>
-                <span class="font-mono text-2xl text-yellow-500">{atis.infoLetter}</span>
-                <span class="text-sm">{atis.issueTime.slice(11, 16)}</span>
+            <div class="flex justify-stretch">
+              <div class="flex items-center border border-stone-600 p-1.5 text-sm">
+                <div class="flex flex-col items-center">
+                  <span class="text-sm">{atis.type}</span>
+                  <span class="font-mono text-2xl text-yellow-500">{atis.infoLetter}</span>
+                  <span class="text-sm">{atis.issueTime.slice(11, 16)}</span>
+                </div>
               </div>
-              <span class="ml-3 border border-stone-600 p-1.5 text-sm">{atis.weatherText}</span>
-              <span class="ml-3 border border-stone-600 p-1.5 text-sm">{atis.statusText}</span>
+
+              <div class="ml-3 flex items-center border border-stone-600 p-1.5 text-sm">
+                <span>{atis.weatherText}</span>
+              </div>
+              <div class="ml-3 flex items-center border border-stone-600 p-1.5 text-sm">
+                <span>{atis.statusText}</span>
+              </div>
             </div>
           )}
         </For>

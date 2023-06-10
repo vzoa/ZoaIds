@@ -6,6 +6,8 @@ import { AirlineTelephony } from "./AirlineTelephony";
 import { SkyVectorLink } from "./SkyVectorLink";
 import { FlightAwareModal } from "./FlightAwareModal";
 import { createQuery } from "@tanstack/solid-query";
+import { A } from "solid-start";
+import { useNavContext } from "./NavContext";
 
 interface ApiTrafficDto {
   faaId: string;
@@ -58,7 +60,17 @@ const defaultColumns: ColumnDef<Pilot>[] = [
   },
   {
     accessorKey: "cid",
-    header: "CID"
+    header: "CID",
+    cell: (info) => (
+      <A
+        href={`https://stats.vatsim.net/stats/${info.getValue<string>()}`}
+        class="underline"
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        {info.getValue<string>()}
+      </A>
+    )
   },
   {
     accessorKey: "name",
@@ -81,13 +93,19 @@ const defaultColumns: ColumnDef<Pilot>[] = [
     accessorFn: (row) => row.flight_plan,
     id: "realroute",
     header: "Real Route",
-    cell: (info) => (
-      <FlightAwareModal
-        departure={info.getValue<FlightPlan>().departure}
-        arrival={info.getValue<FlightPlan>().arrival}
-        text="View"
-      />
-    )
+    cell: (info) => {
+      const [navBackState, { setNavBack }] = useNavContext();
+      return (
+        <A
+          href={`/reference/routes?departure=${info
+            .getValue<FlightPlan>()
+            .departure.toLowerCase()}&arrival=${info.getValue<FlightPlan>().arrival.toLowerCase()}`}
+          onClick={() => setNavBack(location.pathname, info.getValue<FlightPlan>().departure)}
+        >
+          View
+        </A>
+      );
+    }
   },
   {
     accessorKey: "last_updated",
@@ -107,7 +125,7 @@ export const AirportTraffic: Component<AirportTrafficProps> = (props) => {
   const query = createQuery(
     () => ["trafficId", props.faaId],
     () => fetchTrafficForAirport(props.faaId),
-    { refetchInterval: 20 * 1000 }
+    { refetchInterval: 15 * 1000 }
   );
 
   //const tableData = () => traffic.latest?.onGround.departures ?? [];
@@ -126,7 +144,7 @@ export const AirportTraffic: Component<AirportTrafficProps> = (props) => {
 
   return (
     <Show when={query.data}>
-      <table class="table-auto border-collapse text-sm">
+      <table class="mx-0.5 table-auto border-collapse text-sm">
         <thead>
           <For each={table.getHeaderGroups()}>
             {(headerGroup) => (

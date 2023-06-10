@@ -16,6 +16,7 @@ import {
 import "./root.css";
 import { NavBar } from "./components/NavBar";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { NavBackContext, NavBackProvider } from "./components/NavContext";
 
 const queryClient = new QueryClient();
 
@@ -31,13 +32,15 @@ export default function Root() {
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM%20Plex%20Mono" />
       </Head>
       <Body class="bg-stone-900 text-gray-200">
-        <NavBar />
-        <QueryClientProvider client={queryClient}>
-          <Routes>
-            <FileRoutes />
-          </Routes>
-        </QueryClientProvider>
-        <Scripts />
+        <NavBackProvider>
+          <NavBar />
+          <QueryClientProvider client={queryClient}>
+            <Routes>
+              <FileRoutes />
+            </Routes>
+          </QueryClientProvider>
+          <Scripts />
+        </NavBackProvider>
       </Body>
     </Html>
   );

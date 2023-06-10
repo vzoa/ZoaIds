@@ -24,7 +24,7 @@
   width: 100%;
   overflow: hidden;
   animation: slideUp 300ms ease-out;
-  @apply p-2
+  @apply mt-2
 }
 .collapsible__content[data-expanded] {
   animation: slideDown 300ms ease-out;
