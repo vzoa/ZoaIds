@@ -34,14 +34,12 @@ public class CachedVatsimDataRepository : IVatsimDataRepository
         {
             return snapshot;
         }
-        else
-        {
-            using var db = await _contextFactory.CreateDbContextAsync(c);
-            return await db.VatsimSnapshots
-                .AsNoTracking()
-                .OrderByDescending(x => x.Time)
-                .FirstOrDefaultAsync(c);
-        }
+
+        using var db = await _contextFactory.CreateDbContextAsync(c);
+        return await db.VatsimSnapshots
+            .AsNoTracking()
+            .OrderByDescending(x => x.Time)
+            .FirstOrDefaultAsync(c);
     }
 
     public async Task<ICollection<VatsimSnapshot>> GetAllSnapshotsAsync(CancellationToken c = default)
