@@ -1,5 +1,5 @@
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table";
-import { Component, For, Show } from "solid-js";
+import { Component, For, Show, createSignal } from "solid-js";
 import wretch from "wretch";
 import { Atis, Controller, FlightPlan, Pilot } from "~/vatsimdatafeed";
 import { AirlineTelephony } from "./AirlineTelephony";
@@ -8,6 +8,12 @@ import { FlightAwareModal } from "./FlightAwareModal";
 import { createQuery } from "@tanstack/solid-query";
 import { A } from "solid-start";
 import { useNavContext } from "./NavContext";
+import {
+  createDate,
+  createDateNow,
+  createTimeAgo,
+  createTimeDifference
+} from "@solid-primitives/date";
 
 interface ApiTrafficDto {
   faaId: string;
@@ -91,8 +97,8 @@ const defaultColumns: ColumnDef<Pilot>[] = [
   },
   {
     accessorFn: (row) => row.flight_plan,
-    id: "realroute",
-    header: "Real Route",
+    id: "routecheck",
+    header: "Route Check",
     cell: (info) => {
       const [navBackState, { setNavBack }] = useNavContext();
       return (
@@ -100,16 +106,23 @@ const defaultColumns: ColumnDef<Pilot>[] = [
           href={`/reference/routes?departure=${info
             .getValue<FlightPlan>()
             .departure.toLowerCase()}&arrival=${info.getValue<FlightPlan>().arrival.toLowerCase()}`}
+          class="underline"
           onClick={() => setNavBack(location.pathname, info.getValue<FlightPlan>().departure)}
         >
-          View
+          Check
         </A>
       );
     }
   },
   {
     accessorKey: "last_updated",
-    header: "Last Updated"
+    header: "Last Updated",
+    cell: (info) => {
+      let date = Date.parse(info.getValue<string>());
+      const [now] = createDateNow(500);
+      const diff = () => now().getTime() - date;
+      return <span>{Math.round(diff() / 1000)}s ago</span>;
+    }
   }
 ];
 

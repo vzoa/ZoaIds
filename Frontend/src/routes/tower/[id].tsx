@@ -1,12 +1,11 @@
-import { A, useLocation, useParams } from "solid-start";
+import { useParams } from "solid-start";
 import { RealWorldAtis } from "~/components/RealWorldAtis";
 import wretch from "wretch";
 import { Show, createResource } from "solid-js";
 import { AirportTraffic } from "~/components/AirportTraffic";
 import { CollapsiblePaper } from "~/components/CollapsiblePaper";
-import { FlightAwareTable } from "~/components/FlightAwareTable";
 import { VatsimAtis } from "~/components/VatsimAtis";
-import { useNavContext } from "~/components/NavContext";
+import { ChartViewer } from "~/components/ChartViewer";
 
 interface Airport {
   faaId: string;
@@ -47,10 +46,6 @@ const fetchAirportData = async (id: string) => {
 export default function AirportPage() {
   const params = useParams<{ id: string }>();
   const [airport] = createResource(() => params.id, fetchAirportData);
-
-  const [navBackState, { setNavBack }] = useNavContext();
-  const location = useLocation();
-
   return (
     <>
       <CollapsiblePaper title="Real World D-Atis">
@@ -61,6 +56,9 @@ export default function AirportPage() {
       </CollapsiblePaper>
       <CollapsiblePaper defaultOpen title="Traffic Situation">
         <Show when={airport()}>{(airport) => <AirportTraffic faaId={airport().faaId} />}</Show>
+      </CollapsiblePaper>
+      <CollapsiblePaper defaultOpen title="Charts">
+        <ChartViewer includeForm id={params.id} />
       </CollapsiblePaper>
     </>
   );

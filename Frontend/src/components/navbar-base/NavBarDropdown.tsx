@@ -41,7 +41,7 @@ export const NavBarDropdown: ParentComponent<NavBarDropdownProps> = (props) => {
           </DropdownMenu.Icon>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
-          <DropdownMenu.Content class="mt-1 max-h-72 overflow-auto rounded-md bg-[#99491f] shadow-xl scrollbar-thin scrollbar-track-[#99491f] scrollbar-thumb-orange-900 focus:outline-none">
+          <DropdownMenu.Content class="z-50 mt-1 max-h-72 overflow-auto rounded-md bg-[#99491f] shadow-xl scrollbar-thin scrollbar-track-[#99491f] scrollbar-thumb-orange-900 focus:outline-none">
             <div class="h-2" />
             <ul class="list-none">{props.children}</ul>
             <div class="h-2" />

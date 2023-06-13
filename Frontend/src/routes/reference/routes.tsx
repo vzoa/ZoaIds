@@ -6,7 +6,7 @@ import {
   FormOptions,
   setValue
 } from "@modular-forms/solid";
-import { createSignal } from "solid-js";
+import { Show, createSignal } from "solid-js";
 import { useSearchParams } from "solid-start";
 import { FlightAwareTable } from "~/components/FlightAwareTable";
 import { Paper } from "~/components/Paper";
@@ -24,11 +24,10 @@ export default function Reference() {
   const [formSubmission, setFormSubmission] = createSignal<DepartureArrivalForm>();
   const options: FormOptions<DepartureArrivalForm> = { revalidateOn: "submit" };
   const [routeForm, { Form, Field }] = createForm<DepartureArrivalForm>(options);
-  if (searchParams.departure) {
+  if (searchParams.departure && searchParams.arrival) {
     setValue(routeForm, "departureId", searchParams.departure);
-  }
-  if (searchParams.arrival) {
     setValue(routeForm, "arrivalId", searchParams.arrival);
+    setFormSubmission({ departureId: searchParams.departure, arrivalId: searchParams.arrival });
   }
 
   return (
@@ -69,7 +68,7 @@ export default function Reference() {
                   {...props}
                   type="text"
                   label="Arrival:"
-                  placeholder="XXXX"
+                  placeholder="ICAO"
                   value={field.value}
                   error={field.error}
                   required
@@ -99,7 +98,14 @@ export default function Reference() {
         </Form>
       </Paper>
       <Paper title="Real World Routes">
-        <FlightAwareTable departure={searchParams.departure} arrival={searchParams.arrival} />
+        <Show when={formSubmission()}>
+          {(formSubmission) => (
+            <FlightAwareTable
+              departure={formSubmission().departureId}
+              arrival={formSubmission().arrivalId}
+            />
+          )}
+        </Show>
       </Paper>
     </>
   );

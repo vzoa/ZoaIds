@@ -102,7 +102,7 @@ export const FlightAwareTable: Component<FlightAwareTableProps> = (props) => {
   });
 
   return (
-    <Show when={flights()} fallback={<Spinner />}>
+    <Show when={flights.state == "ready"} fallback={<Spinner />}>
       {/* <h1 class="text-xl">Routes</h1> */}
       <table class="table-auto border-collapse text-sm">
         <thead>

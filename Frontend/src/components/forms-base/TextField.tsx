@@ -1,4 +1,5 @@
 import { TextField as Kobalte } from "@kobalte/core";
+import clsx from "clsx";
 import { type JSX, Show, splitProps } from "solid-js";
 
 type TextFieldProps = {
@@ -13,6 +14,7 @@ type TextFieldProps = {
   disabled?: boolean | undefined;
   rootClass?: string | undefined;
   labelClass?: string | undefined;
+  inputClass?: string | undefined;
   ref: (element: HTMLInputElement | HTMLTextAreaElement) => void;
   onInput: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, InputEvent>;
   onChange: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, Event>;
@@ -29,7 +31,7 @@ export function TextField(props: TextFieldProps) {
     <Kobalte.Root
       {...rootProps}
       validationState={props.error ? "invalid" : "valid"}
-      class="flex items-center"
+      class={clsx("flex items-center", props.rootClass)}
     >
       <Show when={props.label}>
         <Kobalte.Label>{props.label}</Kobalte.Label>
@@ -38,7 +40,10 @@ export function TextField(props: TextFieldProps) {
         when={props.multiline}
         fallback={
           <Kobalte.Input
-            class="ml-2 w-16 rounded border border-stone-600 bg-transparent p-1 hover:border-stone-500 focus:border-stone-500 focus:outline-none focus:ring focus:ring-stone-700"
+            class={clsx(
+              "ml-2 rounded border border-stone-600 bg-transparent p-1 hover:border-stone-500 focus:border-stone-500 focus:outline-none focus:ring focus:ring-stone-700",
+              props.inputClass
+            )}
             {...inputProps}
             type={props.type}
           />

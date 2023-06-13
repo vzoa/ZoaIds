@@ -67,7 +67,7 @@ export const RouteLookup: Component = () => {
               {...props}
               type="text"
               label="Departure:"
-              placeholder="XXXX"
+              placeholder="ICAO"
               value={field.value}
               error={field.error}
               required
@@ -87,7 +87,7 @@ export const RouteLookup: Component = () => {
               {...props}
               type="text"
               label="Arrival:"
-              placeholder="XXXX"
+              placeholder="ICAO"
               value={field.value}
               error={field.error}
               required
