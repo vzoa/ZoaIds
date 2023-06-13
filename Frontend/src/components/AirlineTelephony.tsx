@@ -22,9 +22,9 @@ export const AirlineTelephony: Component<AirlineTelephony> = (props) => {
   const [airline] = createResource(() => props.id, fetchInfoForAirline);
 
   return (
-    <ErrorBoundary fallback={<span></span>}>
-      <Suspense fallback={<span></span>}>
-        <span class={props.class}>{airline()?.callsign}</span>
+    <ErrorBoundary fallback={<span class={props.class}>Not found</span>}>
+      <Suspense fallback={<span class={props.class}></span>}>
+        <span class={props.class}>{airline()?.callsign || "None"}</span>
       </Suspense>
     </ErrorBoundary>
   );

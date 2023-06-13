@@ -1,5 +1,5 @@
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table";
-import { Component, For, Show, createSignal } from "solid-js";
+import { Component, For, Show, Suspense, createSignal } from "solid-js";
 import wretch from "wretch";
 import { Atis, Controller, FlightPlan, Pilot } from "~/vatsimdatafeed";
 import { AirlineTelephony } from "./AirlineTelephony";
@@ -8,12 +8,10 @@ import { FlightAwareModal } from "./FlightAwareModal";
 import { createQuery } from "@tanstack/solid-query";
 import { A } from "solid-start";
 import { useNavContext } from "./NavContext";
-import {
-  createDate,
-  createDateNow,
-  createTimeAgo,
-  createTimeDifference
-} from "@solid-primitives/date";
+import { createDateNow } from "@solid-primitives/date";
+import { Tooltip } from "@kobalte/core";
+import { VatsimUserStats } from "./VatsimUserStats";
+import { ExpandableText } from "./ExpandableText";
 
 interface ApiTrafficDto {
   faaId: string;
@@ -33,12 +31,20 @@ const fetchTrafficForAirport = async (id: string) => {
 const defaultColumns: ColumnDef<Pilot>[] = [
   {
     accessorKey: "callsign",
-    header: "Callsign"
-  },
-  {
-    accessorKey: "callsign",
-    header: "Telephony",
-    cell: (info) => <AirlineTelephony id={info.getValue<string>().slice(0, 3)} />
+    header: "Callsign",
+    cell: (info) => (
+      <Tooltip.Root>
+        <Tooltip.Trigger>{info.getValue<string>()}</Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Suspense>
+            <Tooltip.Content class="z-50 rounded-sm bg-black bg-opacity-80 p-1 shadow-xl">
+              <Tooltip.Arrow />
+              <AirlineTelephony id={info.getValue<string>().slice(0, 3)} class="text-sm" />
+            </Tooltip.Content>
+          </Suspense>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    )
   },
   {
     accessorFn: (row) => row.flight_plan?.aircraft_faa,
@@ -62,21 +68,34 @@ const defaultColumns: ColumnDef<Pilot>[] = [
     accessorFn: (row) => row.flight_plan?.route,
     id: "route",
     header: "Route",
-    cell: (info) => info.getValue<string>()
+    cell: (info) => <ExpandableText text={info.getValue<string>()} limit={30} />
   },
   {
     accessorKey: "cid",
     header: "CID",
-    cell: (info) => (
-      <A
-        href={`https://stats.vatsim.net/stats/${info.getValue<string>()}`}
-        class="underline"
-        target="_blank"
-        rel="noreferrer noopener"
-      >
-        {info.getValue<string>()}
-      </A>
-    )
+    cell: (info) => {
+      return (
+        <Tooltip.Root>
+          <Tooltip.Trigger>{info.getValue<string>()}</Tooltip.Trigger>
+          <Tooltip.Portal>
+            <Suspense>
+              <Tooltip.Content class="z-50 rounded-sm bg-black bg-opacity-80 p-1 shadow-xl">
+                <Tooltip.Arrow />
+                <VatsimUserStats id={info.getValue<string>()} />
+              </Tooltip.Content>
+            </Suspense>
+          </Tooltip.Portal>
+        </Tooltip.Root>
+      );
+    }
+    // <A
+    //   href={`https://stats.vatsim.net/stats/${info.getValue<string>()}`}
+    //   class="underline"
+    //   target="_blank"
+    //   rel="noreferrer noopener"
+    // >
+    //   {info.getValue<string>()}
+    // </A>
   },
   {
     accessorKey: "name",

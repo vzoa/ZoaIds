@@ -3,7 +3,7 @@ import { Component, For, Setter, Show, createMemo, createResource, createSignal 
 import wretch from "wretch";
 import { SubmitButton } from "./forms-base/SubmitButton";
 import { TextField } from "./forms-base/TextField";
-import { HiOutlineMagnifyingGlassCircle } from "solid-icons/hi";
+import { HiOutlineArrowLongLeft, HiOutlineMagnifyingGlassCircle } from "solid-icons/hi";
 import {
   ColumnDef,
   RowData,
@@ -11,7 +11,6 @@ import {
   flexRender,
   getCoreRowModel
 } from "@tanstack/solid-table";
-import { Button } from "@kobalte/core";
 
 type ChartViewerProps =
   | {
@@ -104,6 +103,9 @@ export const ChartViewer: Component<ChartViewerProps> = (props) => {
   const [searchString, setSearchString] = createSignal(!props.includeForm ? props.search : "");
   const [displayedChartUrl, setDisplayedChartUrl] = createSignal("");
 
+  const [showTable, setShowTable] = createSignal(true);
+  const [showChart, setShowChart] = createSignal(false);
+
   const [charts] = createResource(searchId(), fetchChartsForAirport);
 
   const matchedCharts = createMemo(() =>
@@ -171,62 +173,73 @@ export const ChartViewer: Component<ChartViewerProps> = (props) => {
           </Form>
         </Show>
       </div>
-      <div>
-        <table class="mx-0.5 table-auto border-collapse text-sm">
-          <thead>
-            <For each={table.getHeaderGroups()}>
-              {(headerGroup) => (
-                <tr>
-                  <For each={headerGroup.headers}>
-                    {(header) => (
-                      <th class="p-2 text-left">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    )}
-                  </For>
-                </tr>
-              )}
-            </For>
-          </thead>
-          <tbody>
-            <For each={table.getRowModel().rows}>
-              {(row) => (
-                <tr class="font-mono transition-colors hover:bg-stone-700">
-                  <For each={row.getVisibleCells()}>
-                    {(cell) => (
-                      <td class="border border-stone-600 px-2 py-0.5">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    )}
-                  </For>
-                </tr>
-              )}
-            </For>
-          </tbody>
-          <tfoot>
-            <For each={table.getFooterGroups()}>
-              {(footerGroup) => (
-                <tr>
-                  <For each={footerGroup.headers}>
-                    {(header) => (
-                      <th>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.footer, header.getContext())}
-                      </th>
-                    )}
-                  </For>
-                </tr>
-              )}
-            </For>
-          </tfoot>
-        </table>
-      </div>
+      <Show when={!displayedChartUrl()}>
+        <div class="mt-2">
+          <table class="mx-0.5 table-auto border-collapse text-sm">
+            <thead>
+              <For each={table.getHeaderGroups()}>
+                {(headerGroup) => (
+                  <tr>
+                    <For each={headerGroup.headers}>
+                      {(header) => (
+                        <th class="p-2 text-left">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
+                      )}
+                    </For>
+                  </tr>
+                )}
+              </For>
+            </thead>
+            <tbody>
+              <For each={table.getRowModel().rows}>
+                {(row) => (
+                  <tr class="font-mono transition-colors hover:bg-stone-700">
+                    <For each={row.getVisibleCells()}>
+                      {(cell) => (
+                        <td class="border border-stone-600 px-2 py-0.5">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      )}
+                    </For>
+                  </tr>
+                )}
+              </For>
+            </tbody>
+            <tfoot>
+              <For each={table.getFooterGroups()}>
+                {(footerGroup) => (
+                  <tr>
+                    <For each={footerGroup.headers}>
+                      {(header) => (
+                        <th>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.footer, header.getContext())}
+                        </th>
+                      )}
+                    </For>
+                  </tr>
+                )}
+              </For>
+            </tfoot>
+          </table>
+        </div>
+      </Show>
       <Show when={displayedChartUrl()}>
         {(url) => (
-          <object class="mt-2" type="application/pdf" width="100%" height="1050px" data={url()} />
+          <>
+            <div
+              class="mt-2 flex cursor-pointer items-center"
+              onClick={() => setDisplayedChartUrl("")}
+            >
+              <HiOutlineArrowLongLeft size={24} />
+              <span class="ml-2">Go Back</span>
+            </div>
+            <object class="mt-2" type="application/pdf" width="100%" height="1050px" data={url()} />
+          </>
         )}
       </Show>
     </>

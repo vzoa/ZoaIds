@@ -54,7 +54,7 @@ export default function AirportPage() {
       <CollapsiblePaper title="Vatsim D-Atis">
         <VatsimAtis id={params.id} />
       </CollapsiblePaper>
-      <CollapsiblePaper defaultOpen title="Traffic Situation">
+      <CollapsiblePaper defaultOpen title="Departure Traffic Situation">
         <Show when={airport()}>{(airport) => <AirportTraffic faaId={airport().faaId} />}</Show>
       </CollapsiblePaper>
       <CollapsiblePaper defaultOpen title="Charts">
