@@ -20,6 +20,7 @@ public class AppSettings
         public int Charts { get; set; } = 3600;
         public int AirlineCodes { get; set; } = 3600;
         public int VnasData { get; set; } = 3600;
+        public int VatsimUserStats { get; set; } = 3600;
     }
 
     public class UrlsSettings
@@ -37,6 +38,7 @@ public class AppSettings
         public string FaaRvrAirportLookup { get; set; } = string.Empty;
         public string ArtccBoundariesGeoJson { get; set; } = string.Empty;
         public string VnasApiEndpoint { get; set; } = string.Empty;
+        public string VatsimApiEndpoint { get; set; } = string.Empty;
     }
 
     public class ArtccAirportsSettings

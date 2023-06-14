@@ -1,4 +1,5 @@
 ﻿using FastEndpoints;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ZoaIdsBackend.Modules.VatsimData.Models;
@@ -63,18 +64,19 @@ public class GetVatsimUser : Endpoint<VatsimUserRequest, VatsimUserResponse>
 {
 
     private readonly IVatsimDataRepository _repository;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IOptionsMonitor<AppSettings> _appSettings;
 
-    public GetVatsimUser(IVatsimDataRepository repository, IHttpClientFactory httpClientFactory)
+    public GetVatsimUser(IVatsimDataRepository repository, IOptionsMonitor<AppSettings> appSettings)
     {
         _repository = repository;
-        _httpClientFactory = httpClientFactory;
+        _appSettings = appSettings;
     }
 
     public override void Configure()
     {
         Get(VatsimDataModule.BaseUri + "/users/{@id}", x => new { x.Cid });
         AllowAnonymous();
+        ResponseCache(_appSettings.CurrentValue.CacheTtls.VatsimUserStats);
         Version(1);
     }
 
@@ -84,17 +86,9 @@ public class GetVatsimUser : Endpoint<VatsimUserRequest, VatsimUserResponse>
         var snapshot = await _repository.GetLatestSnapshotAsync(c);
         var deserializedSnapshot = JsonSerializer.Deserialize<VatsimJsonRoot>(snapshot.RawJson);
 
-        var httpClient = _httpClientFactory.CreateClient();
-        var detailsTask = httpClient.GetFromJsonAsync<VatsimUserDetails>($"https://api.vatsim.net/v2/members/{request.Cid}");
-        var statsTask = httpClient.GetAsync($"https://api.vatsim.net/v2/members/{request.Cid}/stats");
-
+        var detailsTask = _repository.GetUserDetailsAsync(request.Cid);
+        var statsTask = _repository.GetUserStatsAsync(request.Cid);
         await Task.WhenAll(detailsTask, statsTask);
-
-        VatsimUserStats? stats = null;
-        if (statsTask.Result.IsSuccessStatusCode)
-        {
-            stats = await statsTask.Result.Content.ReadFromJsonAsync<VatsimUserStats>(cancellationToken: c);
-        }
 
         if (detailsTask.Result is null || deserializedSnapshot is null)
         {
@@ -105,7 +99,7 @@ public class GetVatsimUser : Endpoint<VatsimUserRequest, VatsimUserResponse>
         var response = new VatsimUserResponse
         {
             UserDetails = MapVatsimUserDetailsResponse(detailsTask.Result, deserializedSnapshot),
-            Stats = stats
+            Stats = statsTask.Result
         };
 
         await SendAsync(response);
