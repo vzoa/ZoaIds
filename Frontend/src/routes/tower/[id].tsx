@@ -1,4 +1,4 @@
-import { useParams } from "solid-start";
+import { Title, useParams } from "solid-start";
 import { RealWorldAtis } from "~/components/RealWorldAtis";
 import wretch from "wretch";
 import { Show, createResource } from "solid-js";
@@ -48,6 +48,7 @@ export default function AirportPage() {
   const [airport] = createResource(() => params.id, fetchAirportData);
   return (
     <>
+      <Title>ZOA IDS: {params.id.toUpperCase()}</Title>
       <CollapsiblePaper title="Real World D-Atis">
         <RealWorldAtis id={params.id} />
       </CollapsiblePaper>
