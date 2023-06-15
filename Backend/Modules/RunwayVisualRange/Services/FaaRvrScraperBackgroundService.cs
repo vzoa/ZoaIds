@@ -26,74 +26,93 @@ public partial class FaaRvrScraperBackgroundService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            // Open FAA RVR airport lookup page
-            var httpClient = _httpClientFactory.CreateClient();
-            using var stream = await httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.FaaRvrAirportLookup, stoppingToken);
-            var parser = new HtmlParser();
-            using var document = await parser.ParseDocumentAsync(stream);
-
-            // Find all the links for airports and filter only those we care about in ZOA
-            var airports = _appSettings.CurrentValue.ArtccAirports.All.Select(a => (a.StartsWith("K") && a.Length == 4) ? a[1..] : a);
-            var linkElements = document.QuerySelectorAll("tr > td > a");
-            var foundLinks = linkElements
-                .Where(e => airports.Contains(e.TextContent, StringComparer.OrdinalIgnoreCase))
-                .Select(e => (Id: e.TextContent, Url: e.GetAttribute("href")));
-
-            // For each found link, open and parse RVR
-            var parsedAirports = await Task.WhenAll(foundLinks.Select(e => FetchRvrObservationAsync(e.Id, e.Url, stoppingToken, httpClient)));
-
-            // Get the results and store in DB
-            var db = await _contextFactory.CreateDbContextAsync(stoppingToken);
-            foreach (var (Id, Rvrs) in parsedAirports)
+            try
             {
-                // Delete all existing RVR observations for this airport
-                var numDeleted = await db.RvrObservations.Where(r => r.AirportFaaId == Id).ExecuteDeleteAsync(stoppingToken);
-                if (numDeleted > 0)
-                {
-                    _logger.LogInformation("Deleted {numDeleted} RVR observations for {id}", numDeleted, Id);
-                }
+                // Open FAA RVR airport lookup page
+                var httpClient = _httpClientFactory.CreateClient();
+                using var stream = await httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.FaaRvrAirportLookup, stoppingToken);
+                var parser = new HtmlParser();
+                using var document = await parser.ParseDocumentAsync(stream);
 
-                // Add all the new observations
-                await db.RvrObservations.AddRangeAsync(Rvrs, stoppingToken);
-                await db.SaveChangesAsync(stoppingToken);
-                _logger.LogInformation("Added {num} RVR observations for {id}", Rvrs.Count, Id);
+                // Find all the links for airports and filter only those we care about in ZOA
+                var airports = _appSettings.CurrentValue.ArtccAirports.All.Select(a => (a.StartsWith("K") && a.Length == 4) ? a[1..] : a);
+                var linkElements = document.QuerySelectorAll("tr > td > a");
+                var foundLinks = linkElements
+                    .Where(e => airports.Contains(e.TextContent, StringComparer.OrdinalIgnoreCase))
+                    .Select(e => (Id: e.TextContent, Url: e.GetAttribute("href")));
+
+                // For each found link, open and parse RVR
+                var parsedAirports = await Task.WhenAll(foundLinks.Select(e => FetchRvrObservationAsync(e.Id, e.Url, stoppingToken, httpClient)));
+
+                // Get the results and store in DB
+                var db = await _contextFactory.CreateDbContextAsync(stoppingToken);
+                foreach (var (Id, Rvrs) in parsedAirports)
+                {
+                    // Skip if null
+                    if (Id is null || Rvrs is null) continue;
+
+                    // Delete all existing RVR observations for this airport
+                    var numDeleted = await db.RvrObservations.Where(r => r.AirportFaaId == Id).ExecuteDeleteAsync(stoppingToken);
+                    if (numDeleted > 0)
+                    {
+                        _logger.LogInformation("Deleted {numDeleted} RVR observations for {id}", numDeleted, Id);
+                    }
+
+                    // Add all the new observations
+                    await db.RvrObservations.AddRangeAsync(Rvrs, stoppingToken);
+                    await db.SaveChangesAsync(stoppingToken);
+                    _logger.LogInformation("Added {num} RVR observations for {id}", Rvrs.Count, Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error while fetching RVR list: {ex}", ex.ToString());
             }
 
             await Task.Delay(1000 * _appSettings.CurrentValue.RvrRefreshSeconds, stoppingToken);
         }
     }
 
-    private async Task<(string Id, List<RvrObservation> Rvrs)> FetchRvrObservationAsync(string airportFaaId, string url, CancellationToken stoppingToken, HttpClient? httpClient = null)
+    private async Task<(string? Id, List<RvrObservation>? Rvrs)> FetchRvrObservationAsync(string airportFaaId, string url, CancellationToken stoppingToken, HttpClient? httpClient = null)
     {
-        httpClient ??= _httpClientFactory.CreateClient();
-        using var stream = await httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.FaaRvrBase + url, stoppingToken);
-        var parser = new HtmlParser();
-        using var document = await parser.ParseDocumentAsync(stream);
-
-        var rows = document.QuerySelectorAll("font > table > tbody > tr").ToList();
-        rows.RemoveAt(0); // First row is a header, so remove it
-
-        var returnList = new List<RvrObservation>();
-        foreach (var row in rows)
+        try
         {
-            var th = row.QuerySelector("th");
-            var tds = row.QuerySelectorAll("td");
-            var newObs = new RvrObservation
+            httpClient ??= _httpClientFactory.CreateClient();
+            using var stream = await httpClient.GetStreamAsync(_appSettings.CurrentValue.Urls.FaaRvrBase + url, stoppingToken);
+            var parser = new HtmlParser();
+            using var document = await parser.ParseDocumentAsync(stream);
+
+            var rows = document.QuerySelectorAll("font > table > tbody > tr").ToList();
+            rows.RemoveAt(0); // First row is a header, so remove it
+
+            var returnList = new List<RvrObservation>();
+            foreach (var row in rows)
             {
-                AirportFaaId = airportFaaId,
-                RunwayEndName = th.TextContent,
-                Touchdown = ParseDistance(tds[0].TextContent),
-                TouchdownTrend = ParseTrend(tds[0].TextContent),
-                Midpoint = ParseDistance(tds[1].TextContent),
-                MidpointTrend = ParseTrend(tds[1].TextContent),
-                Rollout = ParseDistance(tds[2].TextContent),
-                RolloutTrend = ParseTrend(tds[2].TextContent),
-                EdgeLightSetting = ParseLightSetting(tds[3].TextContent),
-                CenterlineLightSetting = ParseLightSetting(tds[4].TextContent)
-            };
-            returnList.Add(newObs);
+                var th = row.QuerySelector("th");
+                var tds = row.QuerySelectorAll("td");
+                var newObs = new RvrObservation
+                {
+                    AirportFaaId = airportFaaId,
+                    RunwayEndName = th.TextContent,
+                    Touchdown = ParseDistance(tds[0].TextContent),
+                    TouchdownTrend = ParseTrend(tds[0].TextContent),
+                    Midpoint = ParseDistance(tds[1].TextContent),
+                    MidpointTrend = ParseTrend(tds[1].TextContent),
+                    Rollout = ParseDistance(tds[2].TextContent),
+                    RolloutTrend = ParseTrend(tds[2].TextContent),
+                    EdgeLightSetting = ParseLightSetting(tds[3].TextContent),
+                    CenterlineLightSetting = ParseLightSetting(tds[4].TextContent)
+                };
+                returnList.Add(newObs);
+            }
+            return (Id: airportFaaId, Rvrs: returnList);
         }
-        return (Id: airportFaaId, Rvrs: returnList);
+        catch (Exception ex)
+        {
+            _logger.LogError("Error while fetching RVR list: {ex}", ex.ToString());
+        }
+
+        return (Id: null, Rvrs: null);
     }
 
     private static int? ParseDistance(string text)
