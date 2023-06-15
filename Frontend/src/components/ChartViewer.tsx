@@ -103,9 +103,6 @@ export const ChartViewer: Component<ChartViewerProps> = (props) => {
   const [searchString, setSearchString] = createSignal(!props.includeForm ? props.search : "");
   const [displayedChartUrl, setDisplayedChartUrl] = createSignal("");
 
-  const [showTable, setShowTable] = createSignal(true);
-  const [showChart, setShowChart] = createSignal(false);
-
   const [charts] = createResource(searchId(), fetchChartsForAirport);
 
   const matchedCharts = createMemo(() =>

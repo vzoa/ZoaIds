@@ -25,7 +25,7 @@ export const ExpandableText: Component<ExpandableTextProps> = (props) => {
               <span class={props.expandedClass}>
                 {props.text}
                 <HiOutlineArrowLongLeft
-                  class="cursor-pointer"
+                  class="ml-1 inline cursor-pointer"
                   onClick={() => setExpanded((s) => !s)}
                 />
               </span>
@@ -33,7 +33,7 @@ export const ExpandableText: Component<ExpandableTextProps> = (props) => {
           >
             <span class={props.condensedClass}>{props.text.slice(0, props.limit)}</span>
             <HiOutlineEllipsisHorizontal
-              class="cursor-pointer"
+              class="ml-1 inline cursor-pointer"
               onClick={() => setExpanded((s) => !s)}
             />
           </Show>

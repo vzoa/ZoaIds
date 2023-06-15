@@ -1,7 +1,9 @@
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table";
-import { Component, For, Show, createResource } from "solid-js";
+import { Component, For, Setter, Show, createResource } from "solid-js";
 import wretch from "wretch";
 import { Spinner } from "./Spinner";
+import { writeClipboard } from "@solid-primitives/clipboard";
+import { HiOutlineClipboard } from "solid-icons/hi";
 
 export interface FlightAwareRouteApiDto {
   departureIcaoId: string;
@@ -54,7 +56,18 @@ const summaryColumns: ColumnDef<FlightRouteSummary>[] = [
   },
   {
     accessorKey: "route",
-    header: "Route"
+    header: "Route",
+    cell: (info) => {
+      return (
+        <>
+          <HiOutlineClipboard
+            class="mr-2 inline cursor-pointer"
+            onClick={() => writeClipboard(info.getValue<string>())}
+          />
+          <span>{info.getValue<string>()}</span>
+        </>
+      );
+    }
   }
 ];
 
@@ -73,7 +86,18 @@ const recentColumns: ColumnDef<Flight>[] = [
   },
   {
     accessorKey: "route",
-    header: "Route"
+    header: "Route",
+    cell: (info) => {
+      return (
+        <>
+          <HiOutlineClipboard
+            class="mr-2 inline cursor-pointer"
+            onClick={() => writeClipboard(info.getValue<string>())}
+          />
+          <span>{info.getValue<string>()}</span>
+        </>
+      );
+    }
   }
 ];
 

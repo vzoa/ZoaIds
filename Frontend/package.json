@@ -23,6 +23,7 @@
     "@kobalte/core": "^0.9.6",
     "@kobalte/tailwindcss": "^0.6.5",
     "@modular-forms/solid": "^0.16.0",
+    "@solid-primitives/clipboard": "^1.5.6",
     "@solid-primitives/date": "^2.0.14",
     "@solid-primitives/deep": "^0.2.0",
     "@solid-primitives/resource": "^0.1.0",

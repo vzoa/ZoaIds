@@ -4,7 +4,6 @@ import wretch from "wretch";
 import { Atis, Controller, FlightPlan, Pilot } from "~/vatsimdatafeed";
 import { AirlineTelephony } from "./AirlineTelephony";
 import { SkyVectorLink } from "./SkyVectorLink";
-import { FlightAwareModal } from "./FlightAwareModal";
 import { createQuery } from "@tanstack/solid-query";
 import { A } from "solid-start";
 import { useNavContext } from "./NavContext";

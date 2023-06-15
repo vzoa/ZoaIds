@@ -40,7 +40,6 @@ export const RealWorldAtis: Component<RealWorldAtisProps> = (props) => {
                   <span class="text-sm">{atis.issueTime.slice(11, 16)}</span>
                 </div>
               </div>
-
               <div class="ml-3 flex items-center border border-stone-600 p-1.5 text-sm">
                 <span>{atis.weatherText}</span>
               </div>

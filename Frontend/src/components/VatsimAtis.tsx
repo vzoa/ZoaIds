@@ -31,6 +31,10 @@ const parseAtis = (atis: Atis) => {
   let rawText = atis.text_atis?.join(" ") ?? "";
   let issueTimeMatch = rawText.match("[0-9]{4}Z");
   let altimeterMatch = rawText.match("A([0-9]{4})");
+  let weatherSentenceRegex = new RegExp("^[0-9]{5}(G[0-9]{2})?KT");
+  let weatherSentenceIndex = rawText
+    .split(". ")
+    .findIndex((sentence) => weatherSentenceRegex.test(sentence));
 
   let parsed: ParsedAtis = {
     icaoId: atis.callsign.slice(0, 4),
@@ -43,8 +47,14 @@ const parseAtis = (atis: Atis) => {
     rawText: rawText,
     issueTime: issueTimeMatch ? issueTimeMatch[0] : "",
     altimeter: altimeterMatch ? parseInt(altimeterMatch[1], 10) : undefined,
-    weatherText: rawText.split(". ")[1],
-    statusText: rawText.split(". ").slice(2).join(". ")
+    weatherText: weatherSentenceIndex >= 0 ? rawText.split(". ")[weatherSentenceIndex] : "",
+    statusText:
+      weatherSentenceIndex >= 0
+        ? rawText
+            .split(". ")
+            .slice(weatherSentenceIndex + 1)
+            .join(". ")
+        : ""
   };
   return parsed;
 };
