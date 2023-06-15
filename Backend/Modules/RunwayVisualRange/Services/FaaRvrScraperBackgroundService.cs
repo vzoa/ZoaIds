@@ -126,10 +126,8 @@ public partial class FaaRvrScraperBackgroundService : BackgroundService
         {
             return null;
         }
-        else
-        {
-            return int.TryParse(text, out var lightSetting) ? lightSetting : null;
-        }
+        return int.TryParse(text, out var lightSetting) ? lightSetting : null;
+
     }
 
     [GeneratedRegex("[0-9]+")]
